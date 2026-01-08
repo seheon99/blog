@@ -13,6 +13,8 @@
                 "./src/*"
             ]
         },
-        "verbatimModuleSyntax": true
+        "verbatimModuleSyntax": true,
+        "jsx": "react-jsx",
+        "jsxImportSource": "react"
     }
 }
