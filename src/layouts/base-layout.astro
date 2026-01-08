@@ -1,4 +1,5 @@
 ---
+import { HeaderIsland } from "@/components/islands";
 import "@/styles/global.css";
 
 interface Props {
@@ -20,7 +21,14 @@ const { title, description } = Astro.props;
     <meta property="og:description" content=`${description}` />
     <link rel="icon" type="image/x-icon" href="/public/favicon.ico" />
   </head>
-  <body>
-    <slot />
+  <body class="h-screen bg-accent overflow-hidden">
+    <div class="bg-background m-2 rounded h-12 p-2">
+      <HeaderIsland client:load />
+    </div>
+    <div
+      class="bg-background m-2 rounded h-[calc(100vh-var(--spacing)*18)] p-2"
+    >
+      <slot />
+    </div>
   </body>
 </html>
