@@ -1,0 +1,23 @@
+---
+interface Props {
+  title: string;
+  description: string;
+}
+const { title, description } = Astro.props;
+---
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content=`${description}` />
+    <meta property="og:title" content=`${title}` />
+    <meta property="og:type" content="website" />
+    <meta property="og:description" content=`${description}` />
+    <link rel="icon" type="image/x-icon" href="/public/favicon.ico" />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>
