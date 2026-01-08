@@ -14,5 +14,9 @@
   "packageManager": "pnpm@10.10.0",
   "dependencies": {
     "astro": "^5.16.7"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.1.18",
+    "tailwindcss": "^4.1.18"
   }
 }
