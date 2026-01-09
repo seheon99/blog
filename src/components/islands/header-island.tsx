@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-import { LayoutList, Map } from "lucide-react";
+import { LayoutGrid, Waypoints } from "lucide-react";
 
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -14,43 +14,43 @@ import {
 } from "@/components/ui/tooltip";
 
 export function HeaderIsland() {
-  const [view, setView] = useState<"list" | "graph" | null>(null);
-  const [href, setHref] = useState("/");
+  const [view, setView] = useState<"grid" | "graph" | null>();
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("graph") === "true") {
-      params.delete("graph");
+    if (location.pathname === "/graph") {
       setView("graph");
+    } else if (location.pathname === "/") {
+      setView("grid");
     } else {
-      params.set("graph", "true");
-      setView("list");
+      setView(null);
     }
-    const search = params.toString();
-    setHref(search ? `/?${search}` : "/");
   }, []);
 
   return (
     <div className="flex justify-between">
       <div className="flex items-center gap-2">
-        <Tooltip defaultOpen>
-          <TooltipTrigger>
-            <Button asChild variant="ghost" size="icon-sm">
-              <a href={href}>
-                {view === "list" ? (
-                  <Map />
+        {view !== null && (
+          <Tooltip defaultOpen>
+            <TooltipTrigger>
+              <Button asChild variant="ghost" size="icon-sm">
+                {view === "grid" ? (
+                  <a href="/graph">
+                    <Waypoints />
+                  </a>
                 ) : view === "graph" ? (
-                  <LayoutList />
+                  <a href="/">
+                    <LayoutGrid />
+                  </a>
                 ) : (
                   <Spinner />
                 )}
-              </a>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{`Switch to ${view === "graph" ? "list" : "graph"} view`}</p>
-          </TooltipContent>
-        </Tooltip>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{`Switch to ${view === "graph" ? "grid" : "graph"} view`}</p>
+            </TooltipContent>
+          </Tooltip>
+        )}
         <a href="/">
           <h1 className="text-xl font-bold">seheon blog</h1>
         </a>
