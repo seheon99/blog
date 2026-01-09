@@ -14,47 +14,43 @@ import {
 } from "@/components/ui/tooltip";
 
 export function HeaderIsland() {
-  const [view, setView] = useState<"list" | "graph" | "article">(null);
+  const [view, setView] = useState<"list" | "graph" | null>(null);
+  const [href, setHref] = useState("/");
 
   useEffect(() => {
-    if (location.pathname === "/") {
-      setView("list");
-    } else if (location.pathname === "/graph") {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("graph") === "true") {
+      params.delete("graph");
       setView("graph");
-    } else if (location.pathname.startsWith("/articles")) {
-      setView("article");
     } else {
-      setView(null);
+      params.set("graph", "true");
+      setView("list");
     }
+    const search = params.toString();
+    setHref(search ? `/?${search}` : "/");
   }, []);
 
   return (
     <div className="flex justify-between">
       <div className="flex items-center gap-2">
-        {["list", "graph", null].includes(view) && (
-          <Tooltip defaultOpen>
-            <TooltipTrigger>
-              <Button asChild variant="outline" size="icon-sm">
-                <a href={view === "list" ? "/graph" : "/"}>
-                  {view === "list" ? (
-                    <Map />
-                  ) : view === "graph" ? (
-                    <LayoutList />
-                  ) : (
-                    <Spinner />
-                  )}
-                </a>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>
-                {view === "list"
-                  ? "Switch to graph view"
-                  : "Switch to list view"}
-              </p>
-            </TooltipContent>
-          </Tooltip>
-        )}
+        <Tooltip defaultOpen>
+          <TooltipTrigger>
+            <Button asChild variant="ghost" size="icon-sm">
+              <a href={href}>
+                {view === "list" ? (
+                  <Map />
+                ) : view === "graph" ? (
+                  <LayoutList />
+                ) : (
+                  <Spinner />
+                )}
+              </a>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{`Switch to ${view === "graph" ? "list" : "graph"} view`}</p>
+          </TooltipContent>
+        </Tooltip>
         <a href="/">
           <h1 className="text-xl font-bold">seheon blog</h1>
         </a>
