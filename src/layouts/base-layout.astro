@@ -15,18 +15,18 @@ const { title, description } = Astro.props;
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
-    <meta name="description" content=`${description}` />
-    <meta property="og:title" content=`${title}` />
+    <meta name="description" content={description} />
+    <meta property="og:title" content={title} />
     <meta property="og:type" content="website" />
-    <meta property="og:description" content=`${description}` />
-    <link rel="icon" type="image/x-icon" href="/public/favicon.ico" />
+    <meta property="og:description" content={description} />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
   </head>
   <body class="h-screen bg-accent overflow-hidden">
-    <div class="bg-background m-2 rounded h-12 p-2">
+    <div class="m-2 rounded h-12 p-2">
       <HeaderIsland client:load />
     </div>
     <div
-      class="bg-background m-2 rounded h-[calc(100vh-var(--spacing)*18)] p-2"
+      class="m-2 rounded h-[calc(100vh-var(--spacing)*18)] overflow-y-scroll"
     >
       <slot />
     </div>

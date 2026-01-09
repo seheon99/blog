@@ -1,5 +1,35 @@
 ---
 import BaseLayout from "@/layouts/base-layout.astro";
+import { cn } from "@/lib/utils";
+import PostCard from "@/components/post/post-card.astro";
+import { getCollection } from "astro:content";
+
+const posts = (await getCollection("posts"))
+  .sort(
+    (a, b) =>
+      new Date(b.data.publishedAt).getTime() -
+      new Date(a.data.publishedAt).getTime()
+  )
+  .map((post) => ({
+    href: `/posts/${post.slug}`,
+    title: post.data.title,
+    description: post.data.description,
+    publishedAt: post.data.publishedAt,
+    tags: post.data.tags,
+    thumbnailUrl: post.data.thumbnail?.url,
+    thumbnailAlt: post.data.thumbnail?.alt,
+    thumbnailRatio: post.data.thumbnail?.ratio,
+  }));
 ---
 
-<BaseLayout title="글" description="글 보여주기">글글글</BaseLayout>
+<BaseLayout title="글" description="글 목록">
+  <main
+    class={cn(
+      "mx-auto w-full lg:w-250 xl:w-300 2xl:w-380",
+      "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5",
+      "gap-2"
+    )}
+  >
+    {posts.map((post) => <PostCard {...post} />)}
+  </main>
+</BaseLayout>
