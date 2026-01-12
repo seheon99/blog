@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { readdir, readFile, stat } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { kebabCase } from "es-toolkit";
@@ -116,25 +116,35 @@ function extractFrontmatter(raw: string): {
   return { data: frontmatter, body };
 }
 
-async function getGitUpdatedAt(rootPath: string, relativePath: string) {
+async function getGitUpdatedAt(rootPath: string, filePath: string) {
+  const targetPath = path.isAbsolute(filePath)
+    ? filePath
+    : path.resolve(rootPath, filePath);
   try {
     const stdout = execFileSync(
       "git",
-      ["log", "-1", "--format=%cI", "--", relativePath],
-      { cwd: rootPath }
+      ["-C", rootPath, "log", "-1", "--format=%cI", "--", targetPath]
     );
-    return stdout.toString().trim();
+    const result = stdout.toString().trim();
+    if (!result) {
+      throw new Error("Empty git timestamp.");
+    }
+    return result;
   } catch (error) {
     const err = error as NodeJS.ErrnoException & {
       status?: number | null;
       stderr?: Buffer | string;
+      stdout?: Buffer | string;
     };
+    const stdout =
+      typeof err.stdout === "string" ? err.stdout : err.stdout?.toString();
+    if (stdout?.trim()) {
+      return stdout.trim();
+    }
     const stderr =
       typeof err.stderr === "string" ? err.stderr : err.stderr?.toString();
     throw new Error(
-      `Failed to collect Git metadata for ${relativePath}. ${
-        stderr ?? ""
-      }`.trim()
+      `Failed to collect Git metadata for ${filePath}. ${stderr ?? ""}`.trim()
     );
   }
 }
@@ -176,9 +186,10 @@ export function gitPostsLoader(options: GitPostsLoaderOptions): Loader {
         const raw = await readFile(filePath, "utf8");
         const { data: frontmatter, body } = extractFrontmatter(raw);
         const rendered = await renderMarkdown(body);
+        const relativeToRoot = toPosixPath(path.relative(rootPath, filePath));
         const relativeToBase = toPosixPath(path.relative(basePath, filePath));
         const id = kebabPath(stripExtension(relativeToBase));
-        const updatedAt = await getGitUpdatedAt(basePath, relativeToBase);
+        const updatedAt = await getGitUpdatedAt(basePath, filePath);
         const data = await parseData({
           id,
           data: {
@@ -191,7 +202,7 @@ export function gitPostsLoader(options: GitPostsLoaderOptions): Loader {
           id,
           data,
           rendered,
-          filePath: relativeToBase,
+          filePath: relativeToRoot,
           digest: generateDigest(raw),
         });
       }
