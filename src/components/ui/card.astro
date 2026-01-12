@@ -14,9 +14,11 @@ const Container = href ? "a" : "div";
   href={href}
   {...props}
   class={cn(
-    "bg-card text-card-foreground block rounded border shadow-xs w-fit",
+    "bg-card text-card-foreground relative isolate block w-fit overflow-hidden rounded-xl border border-black/5 shadow-[0_1px_0_rgba(255,255,255,0.6)] ring-1 ring-black/5 transition duration-200",
+    "before:absolute before:inset-0 before:-z-10 before:bg-[radial-gradient(80%_60%_at_20%_0%,rgba(255,255,255,0.6),transparent_70%)]",
+    // "after:absolute after:inset-0 after:-z-20 after:bg-[linear-gradient(140deg,rgba(255,255,255,0.25),rgba(0,0,0,0.02)_60%,rgba(0,0,0,0.06))]",
     href &&
-      "hover:bg-accent/40 focus-visible:ring-ring focus-visible:ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
+      "hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/10 hover:ring-black/10 focus-visible:ring-ring focus-visible:ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2",
     className
   )}
 >

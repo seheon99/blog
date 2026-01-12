@@ -4,8 +4,9 @@
         ".astro/types.d.ts",
         "**/*"
     ],
-    "exclude": [
-        "dist"
+  "exclude": [
+        "dist",
+        "FOR_AGENTS"
     ],
     "compilerOptions": {
         "paths": {
