@@ -1,14 +1,15 @@
 import { defineCollection, z } from "astro:content";
+import { gitPostsLoader } from "./loaders/git-posts-loader";
 
 const posts = defineCollection({
-  type: "content",
+  loader: gitPostsLoader({
+    baseDir: "src/content/posts",
+    ignoreDirs: ["_templates"],
+  }),
   schema: z.object({
     title: z.string(),
     description: z.string(),
-    publishedAt: z
-      .string()
-      .datetime()
-      .or(z.date().transform((date) => date.toISOString())),
+    updatedAt: z.string().datetime({ offset: true }),
     tags: z.array(z.string()).optional(),
     thumbnail: z
       .object({
@@ -21,4 +22,3 @@ const posts = defineCollection({
 });
 
 export const collections = { posts };
-

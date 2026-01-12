@@ -7,7 +7,7 @@ interface Props {
   href: string;
   title: string;
   description: string;
-  publishedAt: string;
+  updatedAt: string;
   tags?: string[];
   thumbnailUrl?: string;
   thumbnailAlt?: string;
@@ -19,15 +19,15 @@ const {
   href,
   title,
   description,
-  publishedAt,
+  updatedAt,
   tags,
   thumbnailUrl,
   thumbnailAlt = "",
   class: className,
 } = Astro.props;
 
-const dateTime = new Date(publishedAt).toISOString();
-const dateLabel = new Date(publishedAt).toLocaleDateString("ko-KR");
+const dateTime = new Date(updatedAt).toISOString();
+const dateLabel = new Date(updatedAt).toLocaleDateString("ko-KR");
 ---
 
 <Card href={href} class={cn("w-full aspect-3/4", className)} aria-label={title}>
