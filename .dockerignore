@@ -1,0 +1,15 @@
+node_modules
+dist
+.astro
+.git
+!src/content/posts/.git
+!src/content/posts/.git/**
+.gitignore
+.DS_Store
+.env
+.env.*
+npm-debug.log
+pnpm-debug.log
+yarn-debug.log
+yarn-error.log
+FOR_AGENTS
