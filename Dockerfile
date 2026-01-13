@@ -12,15 +12,10 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm build
 
+
+
 FROM nginx:1.27-alpine AS runner
 COPY --from=builder /app/dist /usr/share/nginx/html
-RUN chown -R nginx:nginx /usr/share/nginx/html \
-    && chmod -R 755 /usr/share/nginx/html \
-    && mkdir -p /run/nginx \
-    && chown -R nginx:nginx /run/nginx /var/cache/nginx /var/log/nginx /var/run \
-    && sed -i 's/listen       80;/listen       8080;/' /etc/nginx/conf.d/default.conf \
-    && sed -i 's|^pid .*;|pid /run/nginx/nginx.pid;|' /etc/nginx/nginx.conf \
-    && rm -rf /docker-entrypoint.d/*
-USER nginx
-EXPOSE 8080
+
+EXPOSE 80
 ENTRYPOINT ["nginx", "-g", "daemon off;"]
