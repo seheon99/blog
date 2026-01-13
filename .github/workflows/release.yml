@@ -15,11 +15,6 @@ jobs:
       packages: write
       id-token: write
     steps:
-      - uses: actions/checkout@v6
-        with:
-          repository: seheon99/blog-obsidian-vault
-          path: src/content/posts
-          fetch-depth: 0
       - uses: seheon99/build-and-deploy@v1
         with:
           service-name: blog
