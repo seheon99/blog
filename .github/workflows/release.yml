@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          repository: https://github.com/seheon99/blog-obsidian-vault
+          repository: seheon99/blog-obsidian-vault
           path: src/content/posts
           fetch-depth: 0
       - uses: seheon99/build-and-deploy@v1
@@ -25,6 +25,8 @@ jobs:
           service-name: blog
           registry: ghcr.io/${{ github.repository }}
           dry-run: ${{ github.event_name == 'pull_request' }}
+          submodules: true
+          fetch-depth: 0
           ssh-host: ${{ secrets.SSH_HOST }}
           ssh-user: ${{ secrets.SSH_USER }}
           ssh-key: ${{ secrets.SSH_KEY }}
