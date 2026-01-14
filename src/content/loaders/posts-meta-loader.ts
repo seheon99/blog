@@ -1,6 +1,7 @@
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+
 import { kebabCase } from "es-toolkit";
 
 import type { Loader } from "astro/loaders";
@@ -10,6 +11,7 @@ const defaultMetaPath = "src/content/posts.meta.json";
 
 type PostsMetaEntry = {
   updatedAt?: string;
+  frontmatter?: Record<string, unknown>;
   [key: string]: unknown;
 };
 
@@ -43,85 +45,9 @@ async function collectMarkdownFiles(
   return files;
 }
 
-const stripQuotes = (value: string) => value.replace(/^['"]|['"]$/g, "").trim();
+const frontmatterRegex = /^---\n[\s\S]*?\n---\n?/;
 
-function parseInlineArray(value: string) {
-  const inner = value.slice(1, -1).trim();
-  if (!inner) {
-    return [];
-  }
-  return inner
-    .split(",")
-    .map((item) => stripQuotes(item.trim()))
-    .filter(Boolean);
-}
-
-function parseFrontmatter(block: string) {
-  const data: Record<string, boolean | number | string | string[] | null> = {};
-  const lines = block.split(/\r?\n/);
-
-  for (let index = 0; index < lines.length; index += 1) {
-    const line = lines[index];
-    if (!line || !line.trim()) {
-      continue;
-    }
-
-    const match = line.match(/^([A-Za-z0-9_-]+):\s*(.*)$/);
-    if (!match) {
-      continue;
-    }
-
-    const key = match[1];
-    const value = match[2];
-
-    if (value === "") {
-      const items: string[] = [];
-      let cursor = index + 1;
-      while (cursor < lines.length) {
-        const listMatch = lines[cursor].match(/^\s+-\s+(.+)$/);
-        if (!listMatch) {
-          break;
-        }
-        items.push(stripQuotes(listMatch[1]));
-        cursor += 1;
-      }
-
-      if (items.length > 0) {
-        data[key] = items;
-        index = cursor - 1;
-        continue;
-      }
-
-      data[key] = "";
-      continue;
-    }
-
-    if (value.startsWith("[") && value.endsWith("]")) {
-      data[key] = parseInlineArray(value);
-      continue;
-    }
-
-    data[key] = stripQuotes(value);
-  }
-
-  return data;
-}
-
-const frontmatterRegex = /^---\n([\s\S]*?)\n---\n?/;
-
-function extractFrontmatter(raw: string): {
-  data: { [key: string]: boolean | number | string | string[] | null };
-  body: string;
-} {
-  const match = raw.match(frontmatterRegex);
-  if (!match) {
-    return { data: {}, body: raw };
-  }
-
-  const frontmatter = parseFrontmatter(match[1]);
-  const body = raw.slice(match[0].length);
-  return { data: frontmatter, body };
-}
+const stripFrontmatter = (raw: string) => raw.replace(frontmatterRegex, "");
 
 const toPosixPath = (value: string) => value.split(path.sep).join("/");
 
@@ -177,7 +103,10 @@ export function postsMetaLoader(options: PostsMetaLoaderOptions): Loader {
       const rootPath = fileURLToPath(config.root);
       const basePath = path.resolve(rootPath, options.baseDir);
       const ignoreDirs = new Set(options.ignoreDirs ?? []);
-      const metaPath = path.resolve(rootPath, options.metaPath ?? defaultMetaPath);
+      const metaPath = path.resolve(
+        rootPath,
+        options.metaPath ?? defaultMetaPath
+      );
       const metaMap = await readPostsMeta(metaPath);
       const files = await collectMarkdownFiles(basePath, ignoreDirs);
 
@@ -185,14 +114,14 @@ export function postsMetaLoader(options: PostsMetaLoaderOptions): Loader {
 
       for (const filePath of files) {
         const raw = await readFile(filePath, "utf8");
-        const { data: frontmatter, body } = extractFrontmatter(raw);
+        const body = stripFrontmatter(raw);
         const rendered = await renderMarkdown(body);
         const relativeToRoot = toPosixPath(path.relative(rootPath, filePath));
         const relativeToBase = toPosixPath(path.relative(basePath, filePath));
         const id = kebabPath(stripExtension(relativeToBase));
         const metaEntry = metaMap[relativeToBase];
-        const updatedAt =
-          typeof metaEntry?.updatedAt === "string" ? metaEntry.updatedAt : "";
+        const updatedAt = metaEntry?.updatedAt ?? "";
+        const frontmatter = metaEntry?.frontmatter ?? {};
 
         if (!updatedAt) {
           throw new Error(
@@ -215,6 +144,8 @@ export function postsMetaLoader(options: PostsMetaLoaderOptions): Loader {
           filePath: relativeToRoot,
           digest: generateDigest(raw),
         });
+
+        logger.debug(`Loaded post: ${filePath}`);
       }
 
       logger.info(`Loaded ${files.length} post(s)`);
