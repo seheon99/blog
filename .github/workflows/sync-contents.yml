@@ -19,7 +19,7 @@ jobs:
       - name: Sync posts to obsidian vault
         id: check
         run: |
-          git submodule update --remote --merge
+          git submodule update --remote --checkout
           if git status --porcelain | grep .; then
             echo "changed=true" >> $GITHUB_OUTPUT
             git config user.name "github-actions[bot]"
