@@ -12,14 +12,16 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { normalizePath } from "@/lib/utils";
 
 export function HeaderIsland() {
   const [view, setView] = useState<"grid" | "graph" | null>();
 
   useEffect(() => {
-    if (location.pathname === "/graph") {
+    const path = normalizePath(location.pathname);
+    if (path === "/graph") {
       setView("graph");
-    } else if (location.pathname === "/") {
+    } else if (path === "/") {
       setView("grid");
     } else {
       setView(null);
