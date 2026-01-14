@@ -6,8 +6,6 @@ on:
     tags: ["v*.*.*"]
   pull_request:
     branches: ["main"]
-  repository_dispatch:
-    types: ["content_updated"]
 
 jobs:
   release:
@@ -15,10 +13,8 @@ jobs:
     permissions:
       contents: read
       packages: write
-      id-token: write
     steps:
-      - name: Checkout repository (with submodules)
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: recursive
 
