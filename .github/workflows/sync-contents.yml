@@ -31,7 +31,7 @@ jobs:
             git checkout -B 'automation/content-sync'
             git add src/content/posts
             git commit -m "chore(content): sync post contents"
-            git push origin 'automation/content-sync'
+            git push -f origin 'automation/content-sync'
           else
             echo "changed=false" >> $GITHUB_OUTPUT
             echo "No content changes"
