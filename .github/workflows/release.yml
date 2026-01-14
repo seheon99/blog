@@ -6,6 +6,8 @@ on:
     tags: ["v*.*.*"]
   pull_request:
     branches: ["main"]
+  repository_dispatch:
+    types: ["content_updated"]
 
 jobs:
   release:
