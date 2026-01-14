@@ -15,13 +15,20 @@ jobs:
       packages: write
       id-token: write
     steps:
+      - name: Checkout repository (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Generate posts metadata
+        run: python3 scripts/generate-posts-meta.py
+
       - uses: seheon99/build-and-deploy@v1
         with:
           service-name: blog
           registry: ghcr.io/${{ github.repository }}
           dry-run: ${{ github.event_name == 'pull_request' }}
-          submodules: true
-          fetch-depth: 0
+          skip-checkout: true
           ssh-host: ${{ secrets.SSH_HOST }}
           ssh-user: ${{ secrets.SSH_USER }}
           ssh-key: ${{ secrets.SSH_KEY }}
