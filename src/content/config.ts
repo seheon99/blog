@@ -1,8 +1,8 @@
 import { defineCollection, z } from "astro:content";
-import { gitPostsLoader } from "./loaders/git-posts-loader";
+import { postsMetaLoader } from "./loaders/posts-meta-loader";
 
 const posts = defineCollection({
-  loader: gitPostsLoader({
+  loader: postsMetaLoader({
     baseDir: "src/content/posts",
     ignoreDirs: ["_templates"],
   }),

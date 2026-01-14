@@ -1,4 +1,3 @@
-import { execFileSync } from "node:child_process";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -7,6 +6,14 @@ import { kebabCase } from "es-toolkit";
 import type { Loader } from "astro/loaders";
 
 const markdownExtensions = new Set([".md", ".mdx"]);
+const defaultMetaPath = "src/content/posts.meta.json";
+
+type PostsMetaEntry = {
+  updatedAt?: string;
+  [key: string]: unknown;
+};
+
+type PostsMetaMap = Record<string, PostsMetaEntry>;
 
 async function collectMarkdownFiles(
   dir: string,
@@ -38,7 +45,7 @@ async function collectMarkdownFiles(
 
 const stripQuotes = (value: string) => value.replace(/^['"]|['"]$/g, "").trim();
 
-const parseInlineArray = (value: string) => {
+function parseInlineArray(value: string) {
   const inner = value.slice(1, -1).trim();
   if (!inner) {
     return [];
@@ -47,7 +54,7 @@ const parseInlineArray = (value: string) => {
     .split(",")
     .map((item) => stripQuotes(item.trim()))
     .filter(Boolean);
-};
+}
 
 function parseFrontmatter(block: string) {
   const data: Record<string, boolean | number | string | string[] | null> = {};
@@ -116,39 +123,6 @@ function extractFrontmatter(raw: string): {
   return { data: frontmatter, body };
 }
 
-async function getGitUpdatedAt(rootPath: string, filePath: string) {
-  const targetPath = path.isAbsolute(filePath)
-    ? filePath
-    : path.resolve(rootPath, filePath);
-  try {
-    const stdout = execFileSync(
-      "git",
-      ["-C", rootPath, "log", "-1", "--format=%cI", "--", targetPath]
-    );
-    const result = stdout.toString().trim();
-    if (!result) {
-      throw new Error("Empty git timestamp.");
-    }
-    return result;
-  } catch (error) {
-    const err = error as NodeJS.ErrnoException & {
-      status?: number | null;
-      stderr?: Buffer | string;
-      stdout?: Buffer | string;
-    };
-    const stdout =
-      typeof err.stdout === "string" ? err.stdout : err.stdout?.toString();
-    if (stdout?.trim()) {
-      return stdout.trim();
-    }
-    const stderr =
-      typeof err.stderr === "string" ? err.stderr : err.stderr?.toString();
-    throw new Error(
-      `Failed to collect Git metadata for ${filePath}. ${stderr ?? ""}`.trim()
-    );
-  }
-}
-
 const toPosixPath = (value: string) => value.split(path.sep).join("/");
 
 const stripExtension = (value: string) => value.replace(/\.(md|mdx)$/i, "");
@@ -159,14 +133,39 @@ const kebabPath = (value: string) =>
     .map((segment) => kebabCase(segment))
     .join("/");
 
-type GitPostsLoaderOptions = {
+type PostsMetaLoaderOptions = {
   baseDir: string;
   ignoreDirs?: string[];
+  metaPath?: string;
 };
 
-export function gitPostsLoader(options: GitPostsLoaderOptions): Loader {
+async function readPostsMeta(metaPath: string): Promise<PostsMetaMap> {
+  try {
+    const raw = await readFile(metaPath, "utf8");
+    const parsed = JSON.parse(raw) as PostsMetaMap;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      throw new Error("Invalid posts metadata format.");
+    }
+    return parsed;
+  } catch (error) {
+    const err = error as NodeJS.ErrnoException;
+    if (err.code === "ENOENT") {
+      throw new Error(
+        `Missing posts metadata file at ${metaPath}. Run "python3 scripts/generate-posts-meta.py".`
+      );
+    }
+    if (error instanceof Error) {
+      throw new Error(
+        `Failed to read posts metadata file at ${metaPath}. ${error.message}`
+      );
+    }
+    throw error;
+  }
+}
+
+export function postsMetaLoader(options: PostsMetaLoaderOptions): Loader {
   return {
-    name: "git-posts-loader",
+    name: "posts-meta-loader",
     load: async ({
       store,
       config,
@@ -178,6 +177,8 @@ export function gitPostsLoader(options: GitPostsLoaderOptions): Loader {
       const rootPath = fileURLToPath(config.root);
       const basePath = path.resolve(rootPath, options.baseDir);
       const ignoreDirs = new Set(options.ignoreDirs ?? []);
+      const metaPath = path.resolve(rootPath, options.metaPath ?? defaultMetaPath);
+      const metaMap = await readPostsMeta(metaPath);
       const files = await collectMarkdownFiles(basePath, ignoreDirs);
 
       store.clear();
@@ -189,7 +190,16 @@ export function gitPostsLoader(options: GitPostsLoaderOptions): Loader {
         const relativeToRoot = toPosixPath(path.relative(rootPath, filePath));
         const relativeToBase = toPosixPath(path.relative(basePath, filePath));
         const id = kebabPath(stripExtension(relativeToBase));
-        const updatedAt = await getGitUpdatedAt(basePath, filePath);
+        const metaEntry = metaMap[relativeToBase];
+        const updatedAt =
+          typeof metaEntry?.updatedAt === "string" ? metaEntry.updatedAt : "";
+
+        if (!updatedAt) {
+          throw new Error(
+            `Missing updatedAt for ${relativeToBase} in ${metaPath}. Run "python3 scripts/generate-posts-meta.py".`
+          );
+        }
+
         const data = await parseData({
           id,
           data: {
