@@ -16,9 +16,6 @@ jobs:
         with:
           submodules: true
 
-      - name: Generate posts metadata
-        run: python3 scripts/generate-posts-meta.py
-
       - name: Sync posts to obsidian vault
         id: check
         run: |
@@ -48,6 +45,9 @@ jobs:
         with:
           ref: automation/content-sync
           submodules: true
+
+      - name: Generate posts metadata
+        run: python3 scripts/generate-posts-meta.py
 
       - uses: seheon99/build-and-deploy@v1
         with:
