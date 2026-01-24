@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 
 import BaseLayout from "@/layouts/base-layout.astro";
 import { getCollection, render, type CollectionEntry } from "astro:content";
+import { proseClasses } from "@/lib/prose";
 
 export async function getStaticPaths() {
   const posts = await getCollection("posts");
@@ -44,7 +45,7 @@ const { Content } = await render(post);
         }
       </div>
     </header>
-    <div class="prose prose-neutral mt-6 max-w-none">
+    <div class={cn(proseClasses, "mt-6")}>
       <Content />
     </div>
   </article>
