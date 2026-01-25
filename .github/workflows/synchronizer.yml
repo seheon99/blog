@@ -46,9 +46,6 @@ jobs:
           ref: automation/content-sync
           submodules: true
 
-      - name: Generate posts metadata
-        run: python3 scripts/generate-posts-meta.py
-
       - uses: seheon99/build-and-deploy@v1
         with:
           dry-run: true

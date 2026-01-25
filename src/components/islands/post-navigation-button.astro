@@ -1,0 +1,58 @@
+---
+import { cn } from "@/lib/utils";
+import { ChevronLeft, ChevronRight } from "@lucide/astro";
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  post: CollectionEntry<"posts">;
+  direction: "prev" | "next";
+  label: string;
+}
+
+const { post, direction, label } = Astro.props;
+const isPrev = direction === "prev";
+const Icon = isPrev ? ChevronLeft : ChevronRight;
+const iconPosition = isPrev ? "-left-[26px]" : "-right-[26px]";
+const paddingClasses = isPrev ? "pr-2 pl-7" : "pl-2 pr-7 ml-auto";
+---
+
+<a
+  aria-label={`Go to ${direction === "prev" ? "previous" : "next"} page: ${post.data.title}`}
+  href={`/posts/${post.id}`}
+  class={cn(
+    "group p-1 rounded-md",
+    paddingClasses,
+    "focus-visible:outline-none focus-visible:shadow-[var(--ring)]",
+  )}
+>
+  <span
+    class={cn(
+      "text-xs text-gray-700 dark:text-gray-300 mb-0.5",
+      "transition-colors duration-200 ease-in-out",
+      "group-hover:!text-gray-400 dark:group-hover:!text-gray-600",
+    )}
+  >
+    {label}
+  </span>
+  <div
+    class={cn(
+      "relative flex",
+      "[&>span]:max-w-[20em] [&>span]:inline-block",
+      "[&>span]:truncate [&>span]:break-words",
+    )}
+  >
+    <span class="text-base leading-6 font-medium">
+      {post.data.title}
+    </span>
+    <span
+      class={cn(
+        "absolute mt-0.5 text-gray-700 dark:text-gray-300",
+        "transition-colors duration-200 ease-in-out",
+        iconPosition,
+        "group-hover:!text-gray-400 dark:group-hover:!text-gray-600",
+      )}
+    >
+      <Icon class="w-5 h-5" />
+    </span>
+  </div>
+</a>

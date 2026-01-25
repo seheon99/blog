@@ -19,14 +19,6 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Ensure full git history for posts
-        run: |
-          cd src/content/posts
-          git fetch --unshallow || git fetch --all
-
-      - name: Generate posts metadata
-        run: python3 scripts/generate-posts-meta.py
-
       - uses: seheon99/build-and-deploy@v1
         with:
           service-name: blog
