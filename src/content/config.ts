@@ -1,21 +1,21 @@
-import { defineCollection, z } from "astro:content";
-import { postsMetaLoader } from "./loaders/posts-meta-loader";
+import { defineCollection } from "astro:content";
+import { z } from "astro/zod";
+import { glob } from "astro/loaders";
 
 const posts = defineCollection({
-  loader: postsMetaLoader({
-    baseDir: "src/content/posts",
-    ignoreDirs: ["_templates"],
+  loader: glob({
+    pattern: "**/[^_]*.md",
+    base: "src/content/posts",
   }),
   schema: z.object({
     title: z.string(),
     description: z.string(),
-    updatedAt: z.string().datetime({ offset: true }),
+    createdAt: z.string().datetime({ offset: true }),
     tags: z.array(z.string()).optional(),
     thumbnail: z
       .object({
         url: z.string().url(),
         alt: z.string().default(""),
-        ratio: z.number().positive().optional(),
       })
       .optional(),
   }),
