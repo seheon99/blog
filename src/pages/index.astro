@@ -7,14 +7,14 @@ import { getCollection } from "astro:content";
 const posts = (await getCollection("posts"))
   .sort(
     (a, b) =>
-      new Date(b.data.updatedAt).getTime() -
-      new Date(a.data.updatedAt).getTime()
+      b.data.createdAt.getTime() -
+      a.data.createdAt.getTime()
   )
   .map((post) => ({
     href: `/posts/${post.id}`,
     title: post.data.title,
     description: post.data.description,
-    updatedAt: post.data.updatedAt,
+    updatedAt: post.data.createdAt.toISOString(),
     tags: post.data.tags,
     thumbnailUrl: post.data.thumbnail?.url,
     thumbnailAlt: post.data.thumbnail?.alt,
