@@ -1,4 +1,5 @@
 ---
+import { ImageOff } from "@lucide/astro";
 import { cn } from "@/lib/utils";
 import Card from "@/components/ui/card.astro";
 import Divider from "@/components/ui/divider.astro";
@@ -32,9 +33,9 @@ const dateLabel = new Date(updatedAt).toLocaleDateString("ko-KR");
 
 <Card href={href} class={cn("w-full aspect-3/4", className)} aria-label={title}>
   <article class="size-full flex flex-col">
-    {
-      thumbnailUrl ? (
-        <div class="aspect-video overflow-hidden rounded-t">
+    <div class="aspect-video overflow-hidden rounded-t">
+      {
+        thumbnailUrl ? (
           <img
             src={thumbnailUrl}
             alt={thumbnailAlt}
@@ -42,14 +43,16 @@ const dateLabel = new Date(updatedAt).toLocaleDateString("ko-KR");
             decoding="async"
             class="size-full object-cover"
           />
-        </div>
-      ) : (
-        <div
-          class="aspect-video overflow-hidden rounded-t bg-muted"
-          aria-hidden="true"
-        />
-      )
-    }
+        ) : (
+          <div class="size-full bg-slate-50 flex items-center justify-center">
+            <ImageOff
+              class="opacity-40 size-12 text-muted-foreground"
+              aria-hidden="true"
+            />
+          </div>
+        )
+      }
+    </div>
     <div class="p-4 sm:p-5 flex flex-col justify-between flex-1">
       <div>
         <time
