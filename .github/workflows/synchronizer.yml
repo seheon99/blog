@@ -59,18 +59,14 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v6
-
-      - name: Setup SSH
-        run: |
-          mkdir -p ~/.ssh
-          chmod 700 ~/.ssh
-          printf "%s" "${{ secrets.SYNC_CONTENTS_KEY }}" > ~/.ssh/id_ed25519
-          chmod 600 ~/.ssh/id_ed25519
-          ssh-keyscan github.com >> ~/.ssh/known_hosts
+        with:
+          ssh-key: ${{ secrets.SYNC_CONTENTS_KEY }}
+          persist-credentials: false
+          fetch-depth: 0
 
       - name: Fast-forward merge to main
         run: |
-          git fetch origin
           git checkout main
+          git reset --hard origin/main
           git merge --ff-only origin/automation/content-sync
           git push origin main
