@@ -16,8 +16,8 @@ jobs:
         with:
           submodules: true
 
-      - name: Setup SSH
-        run: |
+      - name: Setup SSH
+        run: |
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
           printf "%s" "${{ secrets.SYNC_CONTENTS_KEY }}" > ~/.ssh/id_ed25519
