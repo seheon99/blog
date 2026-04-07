@@ -4,6 +4,10 @@ on:
   repository_dispatch:
     types: ["content_updated"]
 
+concurrency:
+  group: content-sync
+  cancel-in-progress: false
+
 jobs:
   sync:
     runs-on: ubuntu-latest
@@ -69,12 +73,12 @@ jobs:
       - uses: actions/checkout@v6
         with:
           ssh-key: ${{ secrets.SYNC_CONTENTS_KEY }}
-          persist-credentials: false
           fetch-depth: 0
 
       - name: Fast-forward merge to main
         run: |
           git checkout main
           git reset --hard origin/main
+          git fetch origin automation/content-sync
           git merge --ff-only origin/automation/content-sync
           git push origin main
