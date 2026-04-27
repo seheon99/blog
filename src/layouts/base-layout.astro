@@ -21,12 +21,12 @@ const { title, description } = Astro.props;
     <meta property="og:description" content={description} />
     <link rel="icon" type="image/x-icon" href="/favicon.ico" />
   </head>
-  <body class="h-screen bg-accent overflow-hidden">
+  <body class="min-h-screen md:h-screen bg-accent md:overflow-hidden">
     <div class="m-2 rounded h-12 p-2">
       <HeaderIsland client:load />
     </div>
     <div
-      class="m-2 rounded h-[calc(100vh-var(--spacing)*18)] overflow-y-scroll"
+      class="m-2 rounded md:h-[calc(100vh-var(--spacing)*18)] md:overflow-y-scroll"
     >
       <slot />
     </div>
