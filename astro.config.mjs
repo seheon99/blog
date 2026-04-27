@@ -1,6 +1,7 @@
 import { defineConfig } from "astro/config";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@astrojs/react";
+import { remarkAlert } from "remark-github-blockquote-alert";
 
 export default defineConfig({
   site: "https://blog.seheon.kr",
@@ -9,4 +10,7 @@ export default defineConfig({
     plugins: [tailwindcss()],
   },
   integrations: [react()],
+  markdown: {
+    remarkPlugins: [remarkAlert],
+  },
 });
