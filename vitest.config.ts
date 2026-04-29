@@ -1,11 +1,14 @@
 import path from "node:path";
 
-import { defineConfig } from "vitest/config";
+import { getViteConfig } from "astro/config";
 
-export default defineConfig({
+export default getViteConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),
     },
+  },
+  test: {
+    fileParallelism: false,
   },
 });
