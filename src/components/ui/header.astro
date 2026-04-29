@@ -1,0 +1,36 @@
+---
+import { LayoutList, Waypoints } from "@lucide/astro";
+
+import Navbar from "@/components/ui/navbar/navbar.astro";
+import NavbarItem from "@/components/ui/navbar/navbar-item.astro";
+import NavbarLabel from "@/components/ui/navbar/navbar-label.astro";
+import NavbarSection from "@/components/ui/navbar/navbar-section.astro";
+import NavbarSpacer from "@/components/ui/navbar/navbar-spacer.astro";
+import { normalizePath } from "@/lib/utils";
+
+const path = normalizePath(Astro.url.pathname);
+const view = path === "/graph" ? "graph" : "list";
+---
+
+<Navbar class="bg-transparent relative top-0 left-0">
+  <NavbarSection>
+    <NavbarItem href="/">
+      <NavbarLabel class="text-xl font-bold">seheon blog</NavbarLabel>
+    </NavbarItem>
+  </NavbarSection>
+  <NavbarSpacer />
+  <NavbarItem>writing</NavbarItem>
+  <NavbarItem>about</NavbarItem>
+  <NavbarItem>RSS</NavbarItem>
+  <NavbarSpacer />
+  <NavbarSection>
+    <NavbarItem href="/" current={view === "list"}>
+      <LayoutList data-slot="icon" />
+      <NavbarLabel>list</NavbarLabel>
+    </NavbarItem>
+    <NavbarItem href="/graph" current={view === "graph"}>
+      <Waypoints data-slot="icon" />
+      <NavbarLabel>graph</NavbarLabel>
+    </NavbarItem>
+  </NavbarSection>
+</Navbar>

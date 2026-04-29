@@ -1,5 +1,5 @@
 ---
-import { HeaderIsland } from "@/components/islands/header-island";
+import Header from "@/components/ui/header.astro";
 import "@/styles/global.css";
 
 interface Props {
@@ -19,12 +19,10 @@ const { title, description } = Astro.props;
     <meta property="og:title" content={title} />
     <meta property="og:type" content="website" />
     <meta property="og:description" content={description} />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/x-icon" href="/favicon.svg" />
   </head>
   <body class="min-h-screen md:h-screen bg-accent md:overflow-hidden">
-    <div class="m-2 rounded h-12 p-2">
-      <HeaderIsland client:load />
-    </div>
+    <Header />
     <div
       class="m-2 rounded md:h-[calc(100vh-var(--spacing)*18)] md:overflow-y-scroll"
     >
