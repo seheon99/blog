@@ -1,11 +1,6 @@
 ---
 import { LayoutList, Waypoints } from "@lucide/astro";
 
-import Navbar from "@/components/ui/navbar/navbar.astro";
-import NavbarItem from "@/components/ui/navbar/navbar-item.astro";
-import NavbarLabel from "@/components/ui/navbar/navbar-label.astro";
-import NavbarSection from "@/components/ui/navbar/navbar-section.astro";
-import NavbarSpacer from "@/components/ui/navbar/navbar-spacer.astro";
 import { normalizePath } from "@/lib/utils";
 
 const path = normalizePath(Astro.url.pathname);
@@ -15,35 +10,71 @@ const view = isHome
     ? "graph"
     : "list"
   : null;
+
+const navLinkBase = "text-sm transition-colors";
+const navLinkActive = "font-medium text-fg-1";
+const navLinkIdle = "text-fg-3 hover:text-fg-1";
+
+const toggleOptBase =
+  "inline-flex items-center gap-1.5 rounded-full px-3.5 py-[5px] text-xs font-medium tracking-[0.02em] transition-colors";
+const toggleOptOn = "bg-fg-1 text-bg-1";
+const toggleOptOff = "text-fg-3 hover:text-fg-1";
 ---
 
-<Navbar class="bg-transparent relative top-0 left-0">
-  <NavbarSection>
-    <NavbarItem href="/">
-      <NavbarLabel class="text-xl font-bold">seheon blog</NavbarLabel>
-    </NavbarItem>
-  </NavbarSection>
-  <NavbarSpacer />
-  <NavbarItem>writing</NavbarItem>
-  <NavbarItem>about</NavbarItem>
-  <NavbarItem>RSS</NavbarItem>
-  <NavbarSpacer />
-  <NavbarSection>
-    <NavbarItem
-      href="/?view=list"
-      current={view === "list"}
-      data-view-target="list"
+<nav
+  class="sticky top-0 z-30 border-b border-border bg-[color-mix(in_oklch,var(--bg-1)_78%,transparent)] backdrop-blur-md"
+>
+  <div
+    class="mx-auto flex h-[68px] max-w-[1280px] items-center justify-between gap-6 px-8 max-md:px-4"
+  >
+    <a
+      href="/"
+      class="relative inline-block origin-bottom-left -rotate-3 font-display text-[38px] leading-none font-bold tracking-[-0.5px] text-fg-1"
     >
-      <LayoutList data-slot="icon" />
-      <NavbarLabel>list</NavbarLabel>
-    </NavbarItem>
-    <NavbarItem
-      href="/?view=graph"
-      current={view === "graph"}
-      data-view-target="graph"
-    >
-      <Waypoints data-slot="icon" />
-      <NavbarLabel>graph</NavbarLabel>
-    </NavbarItem>
-  </NavbarSection>
-</Navbar>
+      seheon
+      <span
+        aria-hidden="true"
+        class="absolute right-[14px] top-[16px] block h-[7px] w-[7px] rounded-full bg-brand-600"
+      ></span>
+    </a>
+
+    <div class="flex items-center gap-7 max-md:hidden">
+      <a
+        href="/?view=list"
+        class:list={[navLinkBase, isHome ? navLinkActive : navLinkIdle]}
+        >writing</a
+      >
+      <a href="#" class:list={[navLinkBase, navLinkIdle]}>about</a>
+      <a href="#" class:list={[navLinkBase, navLinkIdle]}>RSS</a>
+    </div>
+
+    {
+      isHome && (
+        <div class="inline-flex items-center rounded-full border border-border bg-bg-1 p-[3px]">
+          <a
+            href="/?view=list"
+            data-view-target="list"
+            class:list={[
+              toggleOptBase,
+              view === "list" ? toggleOptOn : toggleOptOff,
+            ]}
+          >
+            <LayoutList class="size-3.5" />
+            list
+          </a>
+          <a
+            href="/?view=graph"
+            data-view-target="graph"
+            class:list={[
+              toggleOptBase,
+              view === "graph" ? toggleOptOn : toggleOptOff,
+            ]}
+          >
+            <Waypoints class="size-3.5" />
+            graph
+          </a>
+        </div>
+      )
+    }
+  </div>
+</nav>
