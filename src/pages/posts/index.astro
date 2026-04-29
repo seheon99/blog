@@ -18,7 +18,6 @@ const posts = (await getCollection("posts"))
     tags: post.data.tags,
     thumbnailUrl: post.data.thumbnail?.url,
     thumbnailAlt: post.data.thumbnail?.alt,
-    thumbnailRatio: post.data.thumbnail?.ratio,
   }));
 ---
 

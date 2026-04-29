@@ -1,0 +1,51 @@
+---
+interface Props {
+  href: string;
+  title: string;
+  description: string;
+  createdAt: Date;
+  readMinutes: number;
+  primaryTag?: string;
+}
+
+const { href, title, description, createdAt, readMinutes, primaryTag } =
+  Astro.props;
+
+const dateTime = createdAt.toISOString();
+const dateLabel = createdAt
+  .toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  })
+  .toUpperCase();
+---
+
+<a
+  href={href}
+  class="group block w-full border-t border-border py-7 transition-[padding] duration-150 hover:pl-1.5 last:border-b"
+>
+  <div
+    class="mb-2.5 font-mono text-[11px] uppercase tracking-[0.04em] text-fg-3"
+  >
+    <time datetime={dateTime}>{dateLabel}</time>
+    <span class="px-1.5">·</span>
+    <span>{readMinutes} MIN</span>
+    {
+      primaryTag && (
+        <>
+          <span class="px-1.5">·</span>
+          <span>#{primaryTag}</span>
+        </>
+      )
+    }
+  </div>
+  <h2
+    class="mb-2 text-2xl font-bold leading-[1.25] tracking-[-0.02em] text-fg-1 transition-colors duration-100 group-hover:text-brand-600"
+  >
+    {title}
+  </h2>
+  <p class="max-w-[64ch] text-[15px] leading-[1.6] text-fg-2">
+    {description}
+  </p>
+</a>

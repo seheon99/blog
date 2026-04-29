@@ -1,0 +1,74 @@
+---
+import { LayoutList, Waypoints } from "@lucide/astro";
+
+import { normalizePath } from "@/lib/utils";
+
+const path = normalizePath(Astro.url.pathname);
+const isHome = path === "/";
+const view = isHome
+  ? Astro.url.searchParams.get("view") === "graph"
+    ? "graph"
+    : "list"
+  : null;
+
+const navLinkBase = "text-sm transition-colors";
+const navLinkActive = "font-medium text-fg-1";
+const navLinkIdle = "text-fg-3 hover:text-fg-1";
+
+const toggleOpt =
+  "inline-flex items-center gap-1.5 rounded-full px-3.5 py-[5px] text-xs font-medium tracking-[0.02em] text-fg-3 transition-colors hover:text-fg-1 data-[current=true]:bg-fg-1 data-[current=true]:text-bg-1 data-[current=true]:hover:text-bg-1";
+---
+
+<nav
+  class="sticky top-0 z-30 border-b border-border bg-[color-mix(in_oklch,var(--bg-1)_78%,transparent)] backdrop-blur-md"
+>
+  <div
+    class="mx-auto flex h-17 max-w-7xl items-center justify-between gap-6 px-8 max-md:px-4"
+  >
+    <a
+      href="/"
+      class="relative inline-block origin-bottom-left -rotate-3 font-display text-[38px] leading-none font-bold tracking-[-0.5px] text-fg-1"
+    >
+      seheon
+      <span
+        aria-hidden="true"
+        class="absolute right-3.5 top-4 block h-1.75 w-1.75 rounded-full bg-brand-600"
+      ></span>
+    </a>
+
+    <div class="flex items-center gap-7 max-md:hidden">
+      <a
+        href="/?view=list"
+        class:list={[navLinkBase, isHome ? navLinkActive : navLinkIdle]}
+        >writing</a
+      >
+      <a href="#" class:list={[navLinkBase, navLinkIdle]}>about</a>
+      <a href="#" class:list={[navLinkBase, navLinkIdle]}>RSS</a>
+    </div>
+
+    {
+      isHome && (
+        <div class="inline-flex items-center rounded-full border border-border bg-bg-1 p-0.75">
+          <a
+            href="/?view=list"
+            data-view-target="list"
+            data-current={view === "list" ? "true" : "false"}
+            class={toggleOpt}
+          >
+            <LayoutList class="size-3.5" />
+            list
+          </a>
+          <a
+            href="/?view=graph"
+            data-view-target="graph"
+            data-current={view === "graph" ? "true" : "false"}
+            class={toggleOpt}
+          >
+            <Waypoints class="size-3.5" />
+            graph
+          </a>
+        </div>
+      )
+    }
+  </div>
+</nav>

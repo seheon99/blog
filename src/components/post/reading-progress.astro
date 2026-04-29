@@ -1,0 +1,55 @@
+---
+// Sticky 2px reading-progress bar that lives directly under the 68px nav.
+// On <md the page scrolls on <body>; on md+ a wrapper div owns the scroll
+// (see base-layout.astro). The script binds to whichever element is actually
+// scrolling so the bar tracks the right source on both layouts.
+---
+
+<div
+  data-reading-progress
+  aria-hidden="true"
+  class="sticky top-[68px] md:top-0 z-20 h-0.5 w-full bg-transparent pointer-events-none"
+>
+  <div
+    data-reading-progress-fill
+    class="h-full w-0 origin-left bg-brand-600"
+    style="transition: width 80ms linear;"
+  >
+  </div>
+</div>
+
+<script is:inline>
+  (() => {
+    const fill = document.querySelector("[data-reading-progress-fill]");
+    if (!fill) return;
+    const wrapper = document.querySelector("[data-scroll-root]");
+
+    function scrollSource() {
+      if (wrapper && wrapper.scrollHeight > wrapper.clientHeight + 1) {
+        return { top: wrapper.scrollTop, max: wrapper.scrollHeight - wrapper.clientHeight };
+      }
+      const doc = document.documentElement;
+      return {
+        top: window.scrollY || doc.scrollTop,
+        max: doc.scrollHeight - window.innerHeight,
+      };
+    }
+
+    let frame = 0;
+    function update() {
+      frame = 0;
+      const { top, max } = scrollSource();
+      const pct = max > 0 ? Math.min(1, Math.max(0, top / max)) : 0;
+      fill.style.width = (pct * 100).toFixed(2) + "%";
+    }
+    function schedule() {
+      if (frame) return;
+      frame = requestAnimationFrame(update);
+    }
+
+    window.addEventListener("scroll", schedule, { passive: true });
+    if (wrapper) wrapper.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    update();
+  })();
+</script>

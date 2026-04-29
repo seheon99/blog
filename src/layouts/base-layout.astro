@@ -1,5 +1,5 @@
 ---
-import { HeaderIsland } from "@/components/islands/header-island";
+import Header from "@/components/ui/header.astro";
 import "@/styles/global.css";
 
 interface Props {
@@ -10,7 +10,7 @@ interface Props {
 const { title, description } = Astro.props;
 ---
 
-<html>
+<html lang="ko">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -19,14 +19,19 @@ const { title, description } = Astro.props;
     <meta property="og:title" content={title} />
     <meta property="og:type" content="website" />
     <meta property="og:description" content={description} />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+    />
   </head>
-  <body class="min-h-screen md:h-screen bg-accent md:overflow-hidden">
-    <div class="m-2 rounded h-12 p-2">
-      <HeaderIsland client:load />
-    </div>
+  <body class="min-h-screen md:h-screen md:overflow-hidden">
+    <Header />
     <div
-      class="m-2 rounded md:h-[calc(100vh-var(--spacing)*18)] md:overflow-y-scroll"
+      data-scroll-root
+      class="md:h-[calc(100vh-68px)] md:overflow-y-scroll"
     >
       <slot />
     </div>
