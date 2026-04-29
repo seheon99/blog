@@ -9,7 +9,12 @@ import NavbarSpacer from "@/components/ui/navbar/navbar-spacer.astro";
 import { normalizePath } from "@/lib/utils";
 
 const path = normalizePath(Astro.url.pathname);
-const view = path === "/graph" ? "graph" : "list";
+const isHome = path === "/";
+const view = isHome
+  ? Astro.url.searchParams.get("view") === "graph"
+    ? "graph"
+    : "list"
+  : null;
 ---
 
 <Navbar class="bg-transparent relative top-0 left-0">
@@ -24,11 +29,19 @@ const view = path === "/graph" ? "graph" : "list";
   <NavbarItem>RSS</NavbarItem>
   <NavbarSpacer />
   <NavbarSection>
-    <NavbarItem href="/" current={view === "list"}>
+    <NavbarItem
+      href="/?view=list"
+      current={view === "list"}
+      data-view-target="list"
+    >
       <LayoutList data-slot="icon" />
       <NavbarLabel>list</NavbarLabel>
     </NavbarItem>
-    <NavbarItem href="/graph" current={view === "graph"}>
+    <NavbarItem
+      href="/?view=graph"
+      current={view === "graph"}
+      data-view-target="graph"
+    >
       <Waypoints data-slot="icon" />
       <NavbarLabel>graph</NavbarLabel>
     </NavbarItem>

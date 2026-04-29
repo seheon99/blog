@@ -4,12 +4,11 @@ import BaseLayout from "@/layouts/base-layout.astro";
 import PostCard from "@/components/post/post-card.astro";
 import { getCollection } from "astro:content";
 
+const initialView =
+  Astro.url.searchParams.get("view") === "graph" ? "graph" : "list";
+
 const posts = (await getCollection("posts"))
-  .sort(
-    (a, b) =>
-      b.data.createdAt.getTime() -
-      a.data.createdAt.getTime()
-  )
+  .sort((a, b) => b.data.createdAt.getTime() - a.data.createdAt.getTime())
   .map((post) => ({
     href: `/posts/${post.id}`,
     title: post.data.title,
@@ -23,13 +22,59 @@ const posts = (await getCollection("posts"))
 ---
 
 <BaseLayout title="seheon blog" description="글 목록">
-  <main
-    class={cn(
-      "mx-auto w-full lg:w-250 xl:w-300 2xl:w-380",
-      "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5",
-      "gap-2"
-    )}
-  >
-    {posts.map((post) => <PostCard {...post} />)}
-  </main>
+  <section data-view-pane="list" hidden={initialView !== "list"}>
+    <main
+      class={cn(
+        "mx-auto w-full lg:w-250 xl:w-300 2xl:w-380",
+        "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5",
+        "gap-2",
+      )}
+    >
+      {posts.map((post) => <PostCard {...post} />)}
+    </main>
+  </section>
+  <section data-view-pane="graph" hidden={initialView !== "graph"}>
+    <p class="mx-auto w-full max-w-prose p-4 text-muted-foreground">
+      Graph view coming soon.
+    </p>
+  </section>
 </BaseLayout>
+
+<script>
+  function readViewFromURL() {
+    return new URLSearchParams(location.search).get("view") === "graph"
+      ? "graph"
+      : "list";
+  }
+
+  function applyView(view: string) {
+    document.querySelectorAll<HTMLElement>("[data-view-pane]").forEach((el) => {
+      el.hidden = el.dataset.viewPane !== view;
+    });
+    document
+      .querySelectorAll<HTMLAnchorElement>("a[data-view-target]")
+      .forEach((link) => {
+        const isCurrent = link.dataset.viewTarget === view;
+        const wrapper = link.parentElement;
+        if (wrapper) wrapper.dataset.current = isCurrent ? "true" : "false";
+        if (isCurrent) link.dataset.current = "true";
+        else delete link.dataset.current;
+      });
+  }
+
+  document
+    .querySelectorAll<HTMLAnchorElement>("a[data-view-target]")
+    .forEach((link) => {
+      link.addEventListener("click", (event) => {
+        const view = link.dataset.viewTarget;
+        if (!view) return;
+        event.preventDefault();
+        history.pushState({ view }, "", `/?view=${view}`);
+        applyView(view);
+      });
+    });
+
+  window.addEventListener("popstate", () => {
+    applyView(readViewFromURL());
+  });
+</script>

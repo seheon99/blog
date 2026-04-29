@@ -6,6 +6,9 @@ import { remarkAlert } from "remark-github-blockquote-alert";
 export default defineConfig({
   site: "https://blog.seheon.kr",
   base: "/",
+  redirects: {
+    "/graph": "/?view=graph",
+  },
   vite: {
     plugins: [tailwindcss()],
   },
