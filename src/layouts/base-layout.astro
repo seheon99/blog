@@ -30,6 +30,7 @@ const { title, description } = Astro.props;
   <body class="min-h-screen md:h-screen md:overflow-hidden">
     <Header />
     <div
+      data-scroll-root
       class="md:h-[calc(100vh-68px)] md:overflow-y-scroll"
     >
       <slot />
