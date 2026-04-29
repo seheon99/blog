@@ -37,7 +37,7 @@ describe("Header — brand mark", () => {
 
   it("includes the absolutely-positioned brand-blue accent dot", async () => {
     const html = await renderAt("https://blog.seheon.kr/");
-    expect(html).toMatch(/h-\[7px\] w-\[7px\] rounded-full bg-brand-600/);
+    expect(html).toMatch(/<span[^>]*class="[^"]*absolute[^"]*rounded-full[^"]*bg-brand-600/);
   });
 });
 
@@ -78,8 +78,8 @@ describe("Header — view toggle", () => {
     it("highlights 'list' as active by default", () => {
       const listAnchor = tagWith(html, 'data-view-target="list"');
       const graphAnchor = tagWith(html, 'data-view-target="graph"');
-      expect(listAnchor).toContain("bg-fg-1 text-bg-1");
-      expect(graphAnchor).not.toContain("bg-fg-1 text-bg-1");
+      expect(listAnchor).toContain('data-current="true"');
+      expect(graphAnchor).toContain('data-current="false"');
     });
 
     it("preserves data-view-target on anchor tags for the no-reload swap script", () => {
@@ -92,14 +92,14 @@ describe("Header — view toggle", () => {
     const html = await renderAt("https://blog.seheon.kr/?view=graph");
     const listAnchor = tagWith(html, 'data-view-target="list"');
     const graphAnchor = tagWith(html, 'data-view-target="graph"');
-    expect(graphAnchor).toContain("bg-fg-1 text-bg-1");
-    expect(listAnchor).not.toContain("bg-fg-1 text-bg-1");
+    expect(graphAnchor).toContain('data-current="true"');
+    expect(listAnchor).toContain('data-current="false"');
   });
 
   it("treats unknown view values as the default (list)", async () => {
     const html = await renderAt("https://blog.seheon.kr/?view=mystery");
     const listAnchor = tagWith(html, 'data-view-target="list"');
-    expect(listAnchor).toContain("bg-fg-1 text-bg-1");
+    expect(listAnchor).toContain('data-current="true"');
   });
 
   it("hides the toggle on a post page", async () => {

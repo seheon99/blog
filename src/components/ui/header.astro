@@ -15,17 +15,15 @@ const navLinkBase = "text-sm transition-colors";
 const navLinkActive = "font-medium text-fg-1";
 const navLinkIdle = "text-fg-3 hover:text-fg-1";
 
-const toggleOptBase =
-  "inline-flex items-center gap-1.5 rounded-full px-3.5 py-[5px] text-xs font-medium tracking-[0.02em] transition-colors";
-const toggleOptOn = "bg-fg-1 text-bg-1";
-const toggleOptOff = "text-fg-3 hover:text-fg-1";
+const toggleOpt =
+  "inline-flex items-center gap-1.5 rounded-full px-3.5 py-[5px] text-xs font-medium tracking-[0.02em] text-fg-3 transition-colors hover:text-fg-1 data-[current=true]:bg-fg-1 data-[current=true]:text-bg-1 data-[current=true]:hover:text-bg-1";
 ---
 
 <nav
   class="sticky top-0 z-30 border-b border-border bg-[color-mix(in_oklch,var(--bg-1)_78%,transparent)] backdrop-blur-md"
 >
   <div
-    class="mx-auto flex h-[68px] max-w-[1280px] items-center justify-between gap-6 px-8 max-md:px-4"
+    class="mx-auto flex h-17 max-w-7xl items-center justify-between gap-6 px-8 max-md:px-4"
   >
     <a
       href="/"
@@ -34,7 +32,7 @@ const toggleOptOff = "text-fg-3 hover:text-fg-1";
       seheon
       <span
         aria-hidden="true"
-        class="absolute right-[14px] top-[16px] block h-[7px] w-[7px] rounded-full bg-brand-600"
+        class="absolute right-3.5 top-4 block h-1.75 w-1.75 rounded-full bg-brand-600"
       ></span>
     </a>
 
@@ -50,14 +48,12 @@ const toggleOptOff = "text-fg-3 hover:text-fg-1";
 
     {
       isHome && (
-        <div class="inline-flex items-center rounded-full border border-border bg-bg-1 p-[3px]">
+        <div class="inline-flex items-center rounded-full border border-border bg-bg-1 p-0.75">
           <a
             href="/?view=list"
             data-view-target="list"
-            class:list={[
-              toggleOptBase,
-              view === "list" ? toggleOptOn : toggleOptOff,
-            ]}
+            data-current={view === "list" ? "true" : "false"}
+            class={toggleOpt}
           >
             <LayoutList class="size-3.5" />
             list
@@ -65,10 +61,8 @@ const toggleOptOff = "text-fg-3 hover:text-fg-1";
           <a
             href="/?view=graph"
             data-view-target="graph"
-            class:list={[
-              toggleOptBase,
-              view === "graph" ? toggleOptOn : toggleOptOff,
-            ]}
+            data-current={view === "graph" ? "true" : "false"}
+            class={toggleOpt}
           >
             <Waypoints class="size-3.5" />
             graph
