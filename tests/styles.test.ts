@@ -53,6 +53,25 @@ describe("global.css — handoff token system", () => {
   });
 });
 
+describe("global.css — accessibility polish (Phase 7)", () => {
+  it("ships a brand-colored :focus-visible ring for keyboard users", () => {
+    // Sanity: a single :focus-visible block exists with a brand outline.
+    expect(css).toMatch(
+      /:focus-visible\s*\{[^}]*outline:[^}]*var\(--brand-500\)[^}]*\}/,
+    );
+  });
+
+  it("respects prefers-reduced-motion globally", () => {
+    expect(css).toMatch(/@media\s*\(prefers-reduced-motion:\s*reduce\)/);
+    expect(css).toMatch(
+      /@media\s*\(prefers-reduced-motion:\s*reduce\)[\s\S]*animation-duration:\s*0\.01ms\s*!important/,
+    );
+    expect(css).toMatch(
+      /@media\s*\(prefers-reduced-motion:\s*reduce\)[\s\S]*scroll-behavior:\s*auto\s*!important/,
+    );
+  });
+});
+
 describe("global.css — Pretendard self-hosting", () => {
   it("declares all 9 Pretendard weights via @font-face", () => {
     for (const weight of [100, 200, 300, 400, 500, 600, 700, 800, 900]) {

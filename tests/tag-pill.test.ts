@@ -18,10 +18,21 @@ describe("TagPill", () => {
     expect(html).toMatch(/#javascript/);
   });
 
-  it("uses the rounded brand-bg pill chrome", () => {
+  it("uses the rounded pill chrome with a tag-keyed inline background color", () => {
     expect(html).toMatch(/rounded-full/);
-    expect(html).toMatch(/bg-brand-600/);
     expect(html).toMatch(/text-bg-1/);
+    // Tag color is applied via inline style sourced from src/lib/tag-colors.
+    expect(html).toMatch(/style="background-color:\s*oklch\(/);
+  });
+
+  it("derives a stable color per tag (different tags → different oklch)", async () => {
+    const a = await render({ tag: "alpha" });
+    const b = await render({ tag: "beta" });
+    const colorA = a.match(/style="background-color:\s*([^"]+)"/)?.[1];
+    const colorB = b.match(/style="background-color:\s*([^"]+)"/)?.[1];
+    expect(colorA).toBeTruthy();
+    expect(colorB).toBeTruthy();
+    expect(colorA).not.toEqual(colorB);
   });
 
   it("uses mono uppercase typography", () => {
