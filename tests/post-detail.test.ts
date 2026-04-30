@@ -1,126 +1,222 @@
 import { experimental_AstroContainer as AstroContainer } from "astro/container";
-import { describe, expect, it } from "vitest";
+import { getCollection, type CollectionEntry } from "astro:content";
+import { beforeAll, describe, expect, it } from "vitest";
 
-import ReadingProgress from "@/components/post/reading-progress.astro";
-import MarginRail from "@/components/post/margin-rail.astro";
-import PostHeader from "@/components/post/post-header.astro";
-import FootNav from "@/components/post/foot-nav.astro";
+import PostDetailPage from "@/pages/posts/[...id].astro";
 
-async function render(
-  Component: Parameters<AstroContainer["renderToString"]>[0],
-  props: Record<string, unknown> = {},
-): Promise<string> {
+let html: string;
+let post: CollectionEntry<"posts">;
+
+beforeAll(async () => {
+  const posts = await getCollection("posts");
+  const sorted = posts.sort(
+    (a, b) => b.data.createdAt.getTime() - a.data.createdAt.getTime(),
+  );
+  // Pick a middle post so we exercise both prev and next.
+  const idx = Math.min(1, sorted.length - 1);
+  post = sorted[idx];
+  const prevPost = sorted[idx + 1] ?? null;
+  const nextPost = sorted[idx - 1] ?? null;
+
   const container = await AstroContainer.create();
-  return container.renderToString(Component, { props });
+  container.addServerRenderer({
+    name: "@astrojs/react",
+    renderer: (await import("@astrojs/react/server.js")).default,
+  });
+  container.addClientRenderer({
+    name: "@astrojs/react",
+    entrypoint: "@astrojs/react/client.js",
+  });
+  html = await container.renderToString(PostDetailPage, {
+    props: { post, prevPost, nextPost },
+  });
+});
+
+function marginRailFragment(source: string): string {
+  const start = source.indexOf("data-margin-rail");
+  if (start === -1) return "";
+  const end = source.indexOf("</aside>", start);
+  return end === -1 ? source.slice(start) : source.slice(start, end);
 }
 
-describe("ReadingProgress", () => {
-  it("renders a sticky 2px bar offset under the 68px nav on mobile and at top of the wrapper on md+", async () => {
-    const html = await render(ReadingProgress);
-    expect(html).toMatch(/data-reading-progress(?!-)/);
-    expect(html).toContain("sticky");
-    expect(html).toContain("top-[68px]");
-    expect(html).toContain("md:top-0");
-    expect(html).toContain("h-0.5");
+describe("Post detail shell", () => {
+  it("mounts the reading-progress bar and the margin-rail container", () => {
+    expect(html).toContain("data-reading-progress");
+    expect(html).toContain("data-margin-rail");
   });
 
-  it("includes a fill element painted with the brand color", async () => {
-    const html = await render(ReadingProgress);
-    expect(html).toMatch(/data-reading-progress-fill[^>]*class="[^"]*bg-brand-600/);
+  it("uses the minmax(0,1fr) 280px grid that collapses below lg", () => {
+    expect(html).toMatch(
+      /grid-cols-1[^"]*lg:grid-cols-\[minmax\(0,1fr\)_280px\]/,
+    );
   });
 
-  it("ships an inline script that listens to both window and the layout scroll root", async () => {
-    const html = await render(ReadingProgress);
-    expect(html).toContain("data-scroll-root");
-    expect(html).toMatch(/window\.addEventListener\("scroll"/);
-    expect(html).toMatch(/wrapper\.addEventListener\("scroll"/);
-  });
-});
-
-describe("MarginRail", () => {
-  it("is hidden below lg and reserves 280px on lg+", async () => {
-    const html = await render(MarginRail);
-    expect(html).toContain("hidden");
-    expect(html).toContain("lg:block");
-    expect(html).toContain("w-[280px]");
+  it("keeps the margin rail visible on <lg by stacking it below prose", () => {
+    // Phase 7: the rail used to carry `hidden ... lg:block`; now it must stay
+    // visible at every breakpoint and only become sticky at lg.
+    const aside = html.match(/<aside[^>]*data-margin-rail[^>]*>/)?.[0] ?? "";
+    expect(aside).not.toMatch(/\bclass="[^"]*\bhidden\b/);
+    expect(aside).toMatch(/\blg:sticky\b/);
   });
 
-  it("renders the placeholder section labels in mono uppercase", async () => {
-    const html = await render(MarginRail);
-    expect(html).toContain("On this page");
-    expect(html).toContain("Map");
-    expect(html).toContain("Backlinks");
-    expect(html).toMatch(/font-mono[^"]*uppercase/);
+  it("caps prose to 720px", () => {
+    expect(html).toMatch(/max-w-\[720px\]/);
   });
 
-  it("each section uses a 1px left rule per the handoff spec", async () => {
-    const html = await render(MarginRail);
-    const sectionMatches = html.match(/<section[^>]*class="[^"]*border-l[^"]*"/g);
-    expect(sectionMatches?.length).toBe(3);
-  });
-});
-
-describe("PostHeader", () => {
-  const baseProps = {
-    title: "Post detail shell",
-    createdAt: new Date("2026-04-15T00:00:00Z"),
-    body: "한글 본문과 some english words.",
-    primaryTag: "design",
-  };
-
-  it("renders the title with display-scale typography", async () => {
-    const html = await render(PostHeader, baseProps);
-    expect(html).toMatch(/<h1[^>]*class="[^"]*font-extrabold/);
-    expect(html).toMatch(/>\s*Post detail shell\s*</);
+  it("renders the '← all writing' back-link to /", () => {
+    expect(html).toMatch(/<a[^>]*href="\/"[^>]*>\s*← all writing\s*<\/a>/);
   });
 
-  it("renders a tag pill linked to the home filter when a primary tag is present", async () => {
-    const html = await render(PostHeader, baseProps);
-    expect(html).toMatch(/<a[^>]*href="\/\?tag=design"[^>]*>\s*#design\s*</);
+  it("uses a 44px / 32px H1 with -0.04em tracking", () => {
+    expect(html).toMatch(
+      /<h1[^>]*text-\[44px\][^>]*tracking-\[-0\.04em\][^>]*max-md:text-\[32px\]/,
+    );
   });
 
-  it("omits the tag pill when no primary tag is supplied", async () => {
-    const html = await render(PostHeader, { ...baseProps, primaryTag: undefined });
-    expect(html).not.toContain("#design");
-    expect(html).not.toMatch(/href="\/\?tag=/);
-  });
-
-  it("renders the mono date · read-time meta line", async () => {
-    const html = await render(PostHeader, baseProps);
-    expect(html).toMatch(/APR \d{1,2}, 2026/);
+  it("renders the date · MIN · WORDS meta line", () => {
+    expect(html).toMatch(/[A-Z]{3} \d{1,2}, \d{4}/);
     expect(html).toMatch(/\d+ MIN/);
+    expect(html).toMatch(/\d+ WORDS/);
+  });
+
+  it("wires both prev and next foot-nav links", () => {
+    expect(html).toContain("← previous");
+    expect(html).toContain("next →");
+  });
+
+  it("renders the rendered markdown body inside the prose wrapper", () => {
+    // proseClasses pulls in the `prose` token from @tailwindcss/typography.
+    expect(html).toMatch(/class="[^"]*\bprose\b[^"]*"/);
   });
 });
 
-describe("FootNav", () => {
-  const post = (id: string, title: string) =>
-    ({ id, data: { title } }) as never;
+describe("Post detail — margin rail neighborhood graph", () => {
+  // The React island itself (force simulation, click handlers, dim states)
+  // is not exercised here — Astro Container renders client:only islands as
+  // <astro-island> placeholders. Visual / interactive behavior is verified
+  // via manual smoke.
 
-  it("renders prev and next entries with mono eyebrows and titles", async () => {
-    const html = await render(FootNav, {
-      prevPost: post("a", "Earlier post"),
-      nextPost: post("b", "Later post"),
-    });
-    expect(html).toMatch(/<a[^>]*href="\/posts\/a"[^>]*rel="prev"/);
-    expect(html).toMatch(/<a[^>]*href="\/posts\/b"[^>]*rel="next"/);
-    expect(html).toContain("Previous");
-    expect(html).toContain("Next");
-    expect(html).toContain("Earlier post");
-    expect(html).toContain("Later post");
+  it("renders the 'neighborhood' label inside the margin rail", () => {
+    const rail = marginRailFragment(html);
+    expect(rail).toMatch(/>\s*neighborhood\s*</);
   });
 
-  it("renders nothing when there is no neighbor on either side", async () => {
-    const html = await render(FootNav, { prevPost: null, nextPost: null });
-    expect(html).not.toContain("<nav");
+  it("mounts the PostGraphMini React island inside the margin rail", () => {
+    const rail = marginRailFragment(html);
+    expect(rail).toContain("<astro-island");
+    expect(rail).toMatch(/post-graph-mini/);
   });
 
-  it("renders only one column when only one neighbor exists", async () => {
-    const html = await render(FootNav, {
-      prevPost: null,
-      nextPost: post("b", "Later post"),
+  it("passes the current post id as activeId to the island", () => {
+    const rail = marginRailFragment(html);
+    // props are HTML-entity-encoded JSON inside the astro-island attribute.
+    expect(rail).toContain(
+      `&quot;activeId&quot;:[0,&quot;${post.id}&quot;]`,
+    );
+  });
+
+  it("forwards graph nodes and links props to the island", () => {
+    const rail = marginRailFragment(html);
+    expect(rail).toContain("&quot;nodes&quot;");
+    expect(rail).toContain("&quot;links&quot;");
+  });
+
+  it("places the rail's neighborhood section under a 1px left border", () => {
+    const rail = marginRailFragment(html);
+    expect(rail).toMatch(/border-l\b/);
+  });
+});
+
+describe("Post detail — table of contents", () => {
+  // Uses a separate render with a post that has h2/h3 headings.
+  let tocHtml: string;
+
+  beforeAll(async () => {
+    const posts = await getCollection("posts");
+    const sorted = posts.sort(
+      (a, b) => b.data.createdAt.getTime() - a.data.createdAt.getTime(),
+    );
+    const withHeadings = sorted.find((p) =>
+      /^#{2,3} /m.test(p.body ?? ""),
+    );
+    if (!withHeadings) throw new Error("no test post has h2/h3 headings");
+
+    const idx = sorted.findIndex((p) => p.id === withHeadings.id);
+    const prev = sorted[idx + 1] ?? null;
+    const next = sorted[idx - 1] ?? null;
+
+    const container = await AstroContainer.create();
+    container.addServerRenderer({
+      name: "@astrojs/react",
+      renderer: (await import("@astrojs/react/server.js")).default,
     });
-    expect(html).toMatch(/<nav[^>]*aria-label="post pagination"/);
-    expect(html).toContain("Later post");
-    expect(html).not.toContain("Earlier post");
+    container.addClientRenderer({
+      name: "@astrojs/react",
+      entrypoint: "@astrojs/react/client.js",
+    });
+    tocHtml = await container.renderToString(PostDetailPage, {
+      props: { post: withHeadings, prevPost: prev, nextPost: next },
+    });
+  });
+
+  it("renders the TOC section with the 'on this page' label", () => {
+    const rail = marginRailFragment(tocHtml);
+    expect(rail).toContain("data-toc");
+    expect(rail).toMatch(/>\s*on this page\s*</);
+  });
+
+  it("emits a TOC link with data-toc-slug for each heading", () => {
+    const rail = marginRailFragment(tocHtml);
+    const matches = rail.match(/data-toc-slug=/g) ?? [];
+    expect(matches.length).toBeGreaterThan(0);
+  });
+
+  it("indents h3 entries deeper than h2 entries via padding", () => {
+    const rail = marginRailFragment(tocHtml);
+    // h2 → pl-3, h3 → pl-7. We need the post to have at least one of each
+    // for this assertion to be meaningful; assert both classes are present.
+    expect(rail).toMatch(/\bpl-3\b/);
+    expect(rail).toMatch(/\bpl-7\b/);
+  });
+
+  it("hides the TOC section when the post has no h2/h3 headings", () => {
+    // The outer beforeAll picks sorted[1]; in the current fixture set that
+    // post has no h2/h3 headings, so the TOC must not render.
+    const rail = marginRailFragment(html);
+    expect(rail).not.toContain("data-toc");
+  });
+});
+
+describe("Post detail — backlinks", () => {
+  it("renders the backlinks section with an empty-state hint when no other posts reference this one", () => {
+    const rail = marginRailFragment(html);
+    expect(rail).toContain("data-backlinks");
+    expect(rail).toMatch(/no backlinks yet/);
+  });
+
+  it("emits the 'backlinks' label", () => {
+    const rail = marginRailFragment(html);
+    expect(rail).toMatch(/>\s*backlinks\s*</);
+  });
+
+  it("getBacklinks resolves an injected [[Title]] reference", async () => {
+    const posts = await getCollection("posts");
+    const sorted = posts.sort(
+      (a, b) => b.data.createdAt.getTime() - a.data.createdAt.getTime(),
+    );
+    // Mutate a copy in memory so the on-disk content stays unchanged.
+    const target = sorted[0];
+    const referer = sorted[1];
+    const fakeReferer = {
+      ...referer,
+      body: `${referer.body ?? ""}\n\nsee [[${target.data.title}]]`,
+    };
+    const fakePosts = sorted.map((p) =>
+      p.id === referer.id ? fakeReferer : p,
+    );
+
+    const { getBacklinks } = await import("@/lib/post-graph");
+    const backlinks = getBacklinks(fakePosts, target.id);
+    expect(backlinks.map((b) => b.id)).toEqual([referer.id]);
   });
 });

@@ -1,0 +1,73 @@
+---
+import { readMinutes } from "@/lib/read-time";
+import { tagColor } from "@/lib/tag-colors";
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  post: CollectionEntry<"posts">;
+}
+
+const { post } = Astro.props;
+const minutes = readMinutes(post.body ?? "");
+const dateLabel = post.data.createdAt
+  .toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  })
+  .toUpperCase();
+const primaryTag = post.data.tags?.[0];
+---
+
+<aside
+  data-featured-panel
+  class="absolute top-8 left-8 z-10 w-[360px] rounded-[14px] border border-border bg-bg-1 p-5 shadow-[0_1px_3px_rgb(0_0_0/0.04),0_8px_24px_-8px_rgb(0_0_0/0.10)] max-md:hidden"
+>
+  <p
+    class="mb-3 inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.04em] text-fg-3"
+  >
+    <span class="relative inline-flex h-1.5 w-1.5">
+      <span
+        class="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand-500 opacity-75"
+      ></span>
+      <span class="relative inline-flex h-1.5 w-1.5 rounded-full bg-brand-600"
+      ></span>
+    </span>
+    latest
+  </p>
+  <a href={`/posts/${post.id}`} class="group block">
+    <h2
+      class="text-[26px] font-bold leading-tight tracking-[-0.03em] text-fg-1 group-hover:text-brand-700"
+    >
+      {post.data.title}
+    </h2>
+    {
+      post.data.description && (
+        <p class="mt-2 line-clamp-3 text-sm leading-[1.55] text-fg-2">
+          {post.data.description}
+        </p>
+      )
+    }
+    <div
+      class="mt-4 flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.04em] text-fg-3"
+    >
+      <time datetime={post.data.createdAt.toISOString()}>{dateLabel}</time>
+      <span aria-hidden="true">·</span>
+      <span>{minutes} MIN</span>
+      {
+        primaryTag && (
+          <>
+            <span aria-hidden="true">·</span>
+            <span style={`color: ${tagColor(primaryTag)}`}>#{primaryTag}</span>
+          </>
+        )
+      }
+    </div>
+    <span
+      class="mt-4 inline-flex items-center gap-1 font-mono text-xs font-medium text-brand-600 transition-colors group-hover:text-brand-700"
+    >
+      read
+      <span class="transition-transform group-hover:translate-x-[3px]">→</span>
+    </span>
+  </a>
+</aside>

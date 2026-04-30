@@ -4,10 +4,12 @@ import { cn } from "@/lib/utils";
 import BaseLayout from "@/layouts/base-layout.astro";
 import { getCollection, render, type CollectionEntry } from "astro:content";
 import { proseClasses } from "@/lib/prose";
+import { readMinutes, wordCount } from "@/lib/read-time";
+import { buildPostGraph, getBacklinks } from "@/lib/post-graph";
 import ReadingProgress from "@/components/post/reading-progress.astro";
-import PostHeader from "@/components/post/post-header.astro";
-import MarginRail from "@/components/post/margin-rail.astro";
-import FootNav from "@/components/post/foot-nav.astro";
+import TagPill from "@/components/post/tag-pill.astro";
+import PostFootNav from "@/components/post/post-foot-nav.astro";
+import PostGraphMini from "@/components/graph/post-graph-mini";
 
 export async function getStaticPaths() {
   const posts = await getCollection("posts");
@@ -38,29 +40,219 @@ interface Props {
 }
 
 const { post, prevPost, nextPost } = Astro.props;
-const { Content } = await render(post);
+const { Content, headings } = await render(post);
+const toc = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
+
+const body = post.body ?? "";
+const minutes = readMinutes(body);
+const words = wordCount(body);
 const primaryTag = post.data.tags?.[0];
+
+const dateLabel = post.data.createdAt
+  .toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  })
+  .toUpperCase();
+
+const allPosts = await getCollection("posts");
+const graph = buildPostGraph(allPosts);
+const backlinks = getBacklinks(allPosts, post.id);
 ---
 
 <BaseLayout title={post.data.title} description={post.data.description}>
   <ReadingProgress />
-  <div class="mx-auto w-full max-w-[1200px] px-6 lg:px-8">
-    <div class="grid gap-12 lg:grid-cols-[minmax(0,1fr)_280px]">
-      <main class="min-w-0 pt-12 pb-24">
-        <article>
-          <PostHeader
-            title={post.data.title}
-            createdAt={post.data.createdAt}
-            body={post.body ?? ""}
-            primaryTag={primaryTag}
-          />
-          <div class={cn(proseClasses, "max-w-[720px]")}>
-            <Content />
+  <div class="mx-auto w-full max-w-[1280px] px-8 pt-12 pb-24 max-md:px-4">
+    <div
+      class="grid grid-cols-1 gap-16 lg:grid-cols-[minmax(0,1fr)_280px]"
+    >
+      <article class="min-w-0">
+        <header>
+          <a
+            href="/"
+            class="inline-block font-mono text-[11px] uppercase tracking-[0.04em] text-fg-3 transition-colors hover:text-fg-1"
+          >
+            ← all writing
+          </a>
+          {
+            primaryTag && (
+              <div class="mt-6">
+                <TagPill tag={primaryTag} />
+              </div>
+            )
+          }
+          <h1
+            class="mt-4 text-[44px] font-extrabold leading-[1.1] tracking-[-0.04em] text-fg-1 max-md:text-[32px]"
+          >
+            {post.data.title}
+          </h1>
+          <p class="mt-4 max-w-[64ch] text-lg leading-[1.6] text-fg-2">
+            {post.data.description}
+          </p>
+          <div
+            class="mt-6 font-mono text-[11px] uppercase tracking-[0.04em] text-fg-3"
+          >
+            <time datetime={post.data.createdAt.toISOString()}>
+              {dateLabel}
+            </time>
+            <span class="px-1.5">·</span>
+            <span>{minutes} MIN</span>
+            <span class="px-1.5">·</span>
+            <span>{words} WORDS</span>
           </div>
-        </article>
-        <FootNav prevPost={prevPost} nextPost={nextPost} />
-      </main>
-      <MarginRail />
+          <hr class="mt-10 border-border" />
+        </header>
+        <div class={cn(proseClasses, "mt-10 max-w-[720px]")}>
+          <Content />
+        </div>
+        <PostFootNav prevPost={prevPost} nextPost={nextPost} />
+      </article>
+      <aside
+        data-margin-rail
+        class="mt-12 lg:mt-0 lg:sticky lg:top-[92px] lg:self-start"
+        aria-label="margin rail"
+      >
+        <section class="border-l border-border pl-4">
+          <p
+            class="mb-3 font-mono text-[11px] uppercase tracking-[0.04em] text-fg-3"
+          >
+            neighborhood
+          </p>
+          <PostGraphMini
+            client:only="react"
+            nodes={graph.nodes}
+            links={graph.links}
+            activeId={post.id}
+          />
+        </section>
+        {
+          toc.length > 0 && (
+            <section
+              data-toc
+              class="mt-8 border-l border-border pl-4"
+            >
+              <p class="mb-3 font-mono text-[11px] uppercase tracking-[0.04em] text-fg-3">
+                on this page
+              </p>
+              <ul class="flex flex-col gap-0.5 leading-snug">
+                {toc.map((h) => (
+                  <li>
+                    <a
+                      href={`#${h.slug}`}
+                      data-toc-link
+                      data-toc-slug={h.slug}
+                      class:list={[
+                        "block border-l-2 border-transparent py-1 text-fg-3 transition-colors hover:text-fg-1 data-[active=true]:border-brand-500 data-[active=true]:font-semibold data-[active=true]:text-fg-1",
+                        h.depth === 3
+                          ? "pl-7 text-xs"
+                          : "pl-3 text-[13px]",
+                      ]}
+                    >
+                      {h.text}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )
+        }
+        <section
+          data-backlinks
+          class="mt-8 border-l border-border pl-4"
+        >
+          <p
+            class="mb-3 font-mono text-[11px] uppercase tracking-[0.04em] text-fg-3"
+          >
+            backlinks
+            {
+              backlinks.length > 0 && (
+                <span class="ml-1 text-fg-3 opacity-60">{backlinks.length}</span>
+              )
+            }
+          </p>
+          {
+            backlinks.length === 0 ? (
+              <p class="text-xs leading-relaxed text-fg-3">
+                no backlinks yet
+              </p>
+            ) : (
+              <ul class="flex flex-col">
+                {backlinks.map((bl, i) => (
+                  <li
+                    class:list={[
+                      "border-dashed border-border",
+                      i > 0 && "border-t",
+                    ]}
+                  >
+                    <a
+                      href={bl.href}
+                      class="block py-3 pl-0 text-sm leading-snug text-fg-2 transition-[padding-left,color] hover:pl-1 hover:text-fg-1"
+                    >
+                      {bl.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )
+          }
+        </section>
+      </aside>
     </div>
   </div>
 </BaseLayout>
+
+<script>
+  const links = Array.from(
+    document.querySelectorAll<HTMLAnchorElement>("a[data-toc-link]"),
+  );
+  if (links.length > 0) {
+    const headings = links
+      .map((link) => {
+        const slug = link.dataset.tocSlug;
+        if (!slug) return null;
+        const el = document.getElementById(slug);
+        return el ? { link, el } : null;
+      })
+      .filter((h): h is { link: HTMLAnchorElement; el: HTMLElement } => !!h);
+
+    function setActive(slug: string | null) {
+      for (const { link } of headings) {
+        link.dataset.active = link.dataset.tocSlug === slug ? "true" : "false";
+      }
+    }
+
+    function update() {
+      const top = 80;
+      let active: string | null = null;
+      for (const { el } of headings) {
+        if (el.getBoundingClientRect().top - top <= 0) {
+          active = el.id;
+        } else {
+          break;
+        }
+      }
+      setActive(active ?? headings[0]?.el.id ?? null);
+    }
+
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update, { passive: true });
+    update();
+
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    );
+
+    for (const { link, el } of headings) {
+      link.addEventListener("click", (event) => {
+        event.preventDefault();
+        const top = el.getBoundingClientRect().top + window.scrollY - 80;
+        window.scrollTo({
+          top,
+          behavior: reducedMotion.matches ? "auto" : "smooth",
+        });
+        history.replaceState(null, "", `#${el.id}`);
+      });
+    }
+  }
+</script>

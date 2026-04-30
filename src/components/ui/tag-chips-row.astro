@@ -1,0 +1,23 @@
+---
+import TagChip from "./tag-chip.astro";
+
+interface Props {
+  tags: string[];
+  activeTag: string | null;
+  baseHref: string; // e.g. "/?view=list" or "/?view=graph"
+}
+
+const { tags, activeTag, baseHref } = Astro.props;
+const sep = baseHref.includes("?") ? "&" : "?";
+const allHref = baseHref;
+const tagHref = (t: string) => `${baseHref}${sep}tag=${encodeURIComponent(t)}`;
+---
+
+<div class="flex flex-wrap gap-2">
+  <TagChip tag={null} label="all" href={allHref} active={!activeTag} />
+  {
+    tags.map((t) => (
+      <TagChip tag={t} href={tagHref(t)} active={activeTag === t} />
+    ))
+  }
+</div>

@@ -1,42 +1,98 @@
 ---
 import BaseLayout from "@/layouts/base-layout.astro";
 import WritingRow from "@/components/post/writing-row.astro";
+import PostGraph from "@/components/graph/post-graph";
+import TagChipsRow from "@/components/ui/tag-chips-row.astro";
+import FeaturedPanel from "@/components/post/featured-panel.astro";
 import { readMinutes } from "@/lib/read-time";
+import { buildPostGraph } from "@/lib/post-graph";
 import { getCollection } from "astro:content";
 
 const initialView =
   Astro.url.searchParams.get("view") === "graph" ? "graph" : "list";
+const activeTag = Astro.url.searchParams.get("tag");
 
-const posts = (await getCollection("posts"))
-  .sort((a, b) => b.data.createdAt.getTime() - a.data.createdAt.getTime())
-  .map((post) => ({
-    href: `/posts/${post.id}`,
-    title: post.data.title,
-    description: post.data.description,
-    createdAt: post.data.createdAt,
-    readMinutes: readMinutes(post.body ?? ""),
-    primaryTag: post.data.tags?.[0],
-  }));
+const allPosts = await getCollection("posts");
+const graph = buildPostGraph(allPosts);
+
+const sorted = allPosts.sort(
+  (a, b) => b.data.createdAt.getTime() - a.data.createdAt.getTime(),
+);
+
+// Stable, alphabetical list of every tag in use.
+const tagSet = new Set<string>();
+for (const p of allPosts) {
+  for (const t of p.data.tags ?? []) tagSet.add(t);
+}
+const allTags = [...tagSet].sort((a, b) => a.localeCompare(b));
+
+const filteredSorted = activeTag
+  ? sorted.filter((p) => p.data.tags?.includes(activeTag))
+  : sorted;
+
+const posts = filteredSorted.map((post) => ({
+  href: `/posts/${post.id}`,
+  title: post.data.title,
+  description: post.data.description,
+  createdAt: post.data.createdAt,
+  readMinutes: readMinutes(post.body ?? ""),
+  primaryTag: post.data.tags?.[0],
+}));
+
+const featured = sorted[0];
 ---
 
 <BaseLayout title="seheon blog" description="글 목록">
   <section data-view-pane="list" hidden={initialView !== "list"}>
-    <main class="mx-auto w-full max-w-[760px] px-6 pt-12 pb-24">
-      <h1 class="text-[40px] font-extrabold leading-tight tracking-[-0.04em] text-fg-1">
+    <main class="mx-auto w-full max-w-190 px-6 pt-12 pb-24">
+      <h1
+        class="text-[40px] font-extrabold leading-tight tracking-[-0.04em] text-fg-1"
+      >
         글
       </h1>
-      <p class="mt-2 mb-10 text-sm text-fg-3">
+      <p class="mt-2 text-sm text-fg-3">
         {posts.length}개의 글
       </p>
+      <div class="mt-6 mb-10">
+        <TagChipsRow
+          tags={allTags}
+          activeTag={activeTag}
+          baseHref="/?view=list"
+        />
+      </div>
       <div class="flex flex-col">
         {posts.map((post) => <WritingRow {...post} />)}
       </div>
     </main>
   </section>
   <section data-view-pane="graph" hidden={initialView !== "graph"}>
-    <p class="mx-auto w-full max-w-prose p-4 text-fg-3">
-      Graph view coming soon.
-    </p>
+    <div class="relative mx-auto h-[calc(100vh-68px)] w-full px-4">
+      <PostGraph
+        client:only="react"
+        nodes={graph.nodes}
+        links={graph.links}
+        activeTag={activeTag}
+      />
+      {featured && <FeaturedPanel post={featured} />}
+      <div
+        data-graph-tag-chips
+        class="pointer-events-auto absolute top-8 right-8 z-10 max-w-[320px] rounded-[14px] border border-border bg-bg-1 p-4 shadow-[0_1px_3px_rgb(0_0_0/0.04),0_8px_24px_-8px_rgb(0_0_0/0.10)] max-md:hidden"
+      >
+        <p class="mb-2 font-mono text-[10px] uppercase tracking-[0.04em] text-fg-3">
+          filter by tag
+        </p>
+        <TagChipsRow
+          tags={allTags}
+          activeTag={activeTag}
+          baseHref="/?view=graph"
+        />
+      </div>
+      <p
+        class="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full bg-bg-1/80 px-3 py-1 font-mono text-[11px] text-fg-3 backdrop-blur-sm"
+      >
+        hover to preview · click to read
+      </p>
+    </div>
   </section>
 </BaseLayout>
 
@@ -59,6 +115,8 @@ const posts = (await getCollection("posts"))
       });
   }
 
+  applyView(readViewFromURL());
+
   document
     .querySelectorAll<HTMLAnchorElement>("a[data-view-target]")
     .forEach((link) => {
@@ -66,7 +124,9 @@ const posts = (await getCollection("posts"))
         const view = link.dataset.viewTarget;
         if (!view) return;
         event.preventDefault();
-        history.pushState({ view }, "", `/?view=${view}`);
+        const params = new URLSearchParams(location.search);
+        params.set("view", view);
+        history.pushState({ view }, "", `/?${params.toString()}`);
         applyView(view);
       });
     });
