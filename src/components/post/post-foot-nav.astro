@@ -1,0 +1,50 @@
+---
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  prevPost?: CollectionEntry<"posts"> | null;
+  nextPost?: CollectionEntry<"posts"> | null;
+}
+
+const { prevPost, nextPost } = Astro.props;
+---
+
+<nav
+  aria-label="post pagination"
+  class="mt-24 flex items-start justify-between gap-8 border-t border-border pt-8"
+>
+  {
+    prevPost ? (
+      <a
+        href={`/posts/${prevPost.id}`}
+        class="group flex max-w-[20rem] flex-col items-start gap-1.5"
+      >
+        <span class="font-mono text-[11px] uppercase tracking-[0.04em] text-fg-3 transition-colors group-hover:text-fg-1">
+          ← previous
+        </span>
+        <span class="text-[15px] font-semibold leading-[1.4] text-fg-1 transition-colors group-hover:text-brand-600">
+          {prevPost.data.title}
+        </span>
+      </a>
+    ) : (
+      <span aria-hidden="true" />
+    )
+  }
+  {
+    nextPost ? (
+      <a
+        href={`/posts/${nextPost.id}`}
+        class="group ml-auto flex max-w-[20rem] flex-col items-end gap-1.5 text-right"
+      >
+        <span class="font-mono text-[11px] uppercase tracking-[0.04em] text-fg-3 transition-colors group-hover:text-fg-1">
+          next →
+        </span>
+        <span class="text-[15px] font-semibold leading-[1.4] text-fg-1 transition-colors group-hover:text-brand-600">
+          {nextPost.data.title}
+        </span>
+      </a>
+    ) : (
+      <span aria-hidden="true" />
+    )
+  }
+</nav>

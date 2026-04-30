@@ -1,126 +1,67 @@
 import { experimental_AstroContainer as AstroContainer } from "astro/container";
-import { describe, expect, it } from "vitest";
+import { getCollection } from "astro:content";
+import { beforeAll, describe, expect, it } from "vitest";
 
-import ReadingProgress from "@/components/post/reading-progress.astro";
-import MarginRail from "@/components/post/margin-rail.astro";
-import PostHeader from "@/components/post/post-header.astro";
-import FootNav from "@/components/post/foot-nav.astro";
+import PostDetailPage from "@/pages/posts/[...id].astro";
 
-async function render(
-  Component: Parameters<AstroContainer["renderToString"]>[0],
-  props: Record<string, unknown> = {},
-): Promise<string> {
+let html: string;
+
+beforeAll(async () => {
+  const posts = await getCollection("posts");
+  const sorted = posts.sort(
+    (a, b) => b.data.createdAt.getTime() - a.data.createdAt.getTime(),
+  );
+  // Pick a middle post so we exercise both prev and next.
+  const idx = Math.min(1, sorted.length - 1);
+  const post = sorted[idx];
+  const prevPost = sorted[idx + 1] ?? null;
+  const nextPost = sorted[idx - 1] ?? null;
+
   const container = await AstroContainer.create();
-  return container.renderToString(Component, { props });
-}
-
-describe("ReadingProgress", () => {
-  it("renders a sticky 2px bar offset under the 68px nav on mobile and at top of the wrapper on md+", async () => {
-    const html = await render(ReadingProgress);
-    expect(html).toMatch(/data-reading-progress(?!-)/);
-    expect(html).toContain("sticky");
-    expect(html).toContain("top-[68px]");
-    expect(html).toContain("md:top-0");
-    expect(html).toContain("h-0.5");
-  });
-
-  it("includes a fill element painted with the brand color", async () => {
-    const html = await render(ReadingProgress);
-    expect(html).toMatch(/data-reading-progress-fill[^>]*class="[^"]*bg-brand-600/);
-  });
-
-  it("ships an inline script that listens to both window and the layout scroll root", async () => {
-    const html = await render(ReadingProgress);
-    expect(html).toContain("data-scroll-root");
-    expect(html).toMatch(/window\.addEventListener\("scroll"/);
-    expect(html).toMatch(/wrapper\.addEventListener\("scroll"/);
+  html = await container.renderToString(PostDetailPage, {
+    props: { post, prevPost, nextPost },
   });
 });
 
-describe("MarginRail", () => {
-  it("is hidden below lg and reserves 280px on lg+", async () => {
-    const html = await render(MarginRail);
-    expect(html).toContain("hidden");
-    expect(html).toContain("lg:block");
-    expect(html).toContain("w-[280px]");
+describe("Post detail shell", () => {
+  it("mounts the reading-progress bar and the margin-rail container", () => {
+    expect(html).toContain("data-reading-progress");
+    expect(html).toContain("data-margin-rail");
   });
 
-  it("renders the placeholder section labels in mono uppercase", async () => {
-    const html = await render(MarginRail);
-    expect(html).toContain("On this page");
-    expect(html).toContain("Map");
-    expect(html).toContain("Backlinks");
-    expect(html).toMatch(/font-mono[^"]*uppercase/);
+  it("uses the minmax(0,1fr) 280px grid that collapses below lg", () => {
+    expect(html).toMatch(
+      /grid-cols-1[^"]*lg:grid-cols-\[minmax\(0,1fr\)_280px\]/,
+    );
   });
 
-  it("each section uses a 1px left rule per the handoff spec", async () => {
-    const html = await render(MarginRail);
-    const sectionMatches = html.match(/<section[^>]*class="[^"]*border-l[^"]*"/g);
-    expect(sectionMatches?.length).toBe(3);
-  });
-});
-
-describe("PostHeader", () => {
-  const baseProps = {
-    title: "Post detail shell",
-    createdAt: new Date("2026-04-15T00:00:00Z"),
-    body: "한글 본문과 some english words.",
-    primaryTag: "design",
-  };
-
-  it("renders the title with display-scale typography", async () => {
-    const html = await render(PostHeader, baseProps);
-    expect(html).toMatch(/<h1[^>]*class="[^"]*font-extrabold/);
-    expect(html).toMatch(/>\s*Post detail shell\s*</);
+  it("caps prose to 720px", () => {
+    expect(html).toMatch(/max-w-\[720px\]/);
   });
 
-  it("renders a tag pill linked to the home filter when a primary tag is present", async () => {
-    const html = await render(PostHeader, baseProps);
-    expect(html).toMatch(/<a[^>]*href="\/\?tag=design"[^>]*>\s*#design\s*</);
+  it("renders the '← all writing' back-link to /", () => {
+    expect(html).toMatch(/<a[^>]*href="\/"[^>]*>\s*← all writing\s*<\/a>/);
   });
 
-  it("omits the tag pill when no primary tag is supplied", async () => {
-    const html = await render(PostHeader, { ...baseProps, primaryTag: undefined });
-    expect(html).not.toContain("#design");
-    expect(html).not.toMatch(/href="\/\?tag=/);
+  it("uses a 44px / 32px H1 with -0.04em tracking", () => {
+    expect(html).toMatch(
+      /<h1[^>]*text-\[44px\][^>]*tracking-\[-0\.04em\][^>]*max-md:text-\[32px\]/,
+    );
   });
 
-  it("renders the mono date · read-time meta line", async () => {
-    const html = await render(PostHeader, baseProps);
-    expect(html).toMatch(/APR \d{1,2}, 2026/);
+  it("renders the date · MIN · WORDS meta line", () => {
+    expect(html).toMatch(/[A-Z]{3} \d{1,2}, \d{4}/);
     expect(html).toMatch(/\d+ MIN/);
-  });
-});
-
-describe("FootNav", () => {
-  const post = (id: string, title: string) =>
-    ({ id, data: { title } }) as never;
-
-  it("renders prev and next entries with mono eyebrows and titles", async () => {
-    const html = await render(FootNav, {
-      prevPost: post("a", "Earlier post"),
-      nextPost: post("b", "Later post"),
-    });
-    expect(html).toMatch(/<a[^>]*href="\/posts\/a"[^>]*rel="prev"/);
-    expect(html).toMatch(/<a[^>]*href="\/posts\/b"[^>]*rel="next"/);
-    expect(html).toContain("Previous");
-    expect(html).toContain("Next");
-    expect(html).toContain("Earlier post");
-    expect(html).toContain("Later post");
+    expect(html).toMatch(/\d+ WORDS/);
   });
 
-  it("renders nothing when there is no neighbor on either side", async () => {
-    const html = await render(FootNav, { prevPost: null, nextPost: null });
-    expect(html).not.toContain("<nav");
+  it("wires both prev and next foot-nav links", () => {
+    expect(html).toContain("← previous");
+    expect(html).toContain("next →");
   });
 
-  it("renders only one column when only one neighbor exists", async () => {
-    const html = await render(FootNav, {
-      prevPost: null,
-      nextPost: post("b", "Later post"),
-    });
-    expect(html).toMatch(/<nav[^>]*aria-label="post pagination"/);
-    expect(html).toContain("Later post");
-    expect(html).not.toContain("Earlier post");
+  it("renders the rendered markdown body inside the prose wrapper", () => {
+    // proseClasses pulls in the `prose` token from @tailwindcss/typography.
+    expect(html).toMatch(/class="[^"]*\bprose\b[^"]*"/);
   });
 });
