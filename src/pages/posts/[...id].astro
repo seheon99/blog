@@ -4,7 +4,10 @@ import { cn } from "@/lib/utils";
 import BaseLayout from "@/layouts/base-layout.astro";
 import { getCollection, render, type CollectionEntry } from "astro:content";
 import { proseClasses } from "@/lib/prose";
-import PostNavigation from "@/components/islands/post-navigation.astro";
+import { readMinutes, wordCount } from "@/lib/read-time";
+import ReadingProgress from "@/components/post/reading-progress.astro";
+import TagPill from "@/components/post/tag-pill.astro";
+import PostFootNav from "@/components/post/post-foot-nav.astro";
 
 export async function getStaticPaths() {
   const posts = await getCollection("posts");
@@ -36,35 +39,74 @@ interface Props {
 
 const { post, prevPost, nextPost } = Astro.props;
 const { Content } = await render(post);
+
+const body = post.body ?? "";
+const minutes = readMinutes(body);
+const words = wordCount(body);
+const primaryTag = post.data.tags?.[0];
+
+const dateLabel = post.data.createdAt
+  .toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  })
+  .toUpperCase();
 ---
 
 <BaseLayout title={post.data.title} description={post.data.description}>
-  <article
-    class={cn(
-      "mx-auto w-full lg:w-250 xl:w-300 2xl:w-380",
-      "rounded border bg-card text-card-foreground shadow-xs p-5 sm:p-6",
-    )}
-  >
-    <header class="flex flex-col gap-2">
-      <h1 class="text-xl font-bold leading-tight tracking-tight">
-        {post.data.title}
-      </h1>
-      <div class="text-muted-foreground text-sm flex flex-wrap gap-2">
-        <time datetime={post.data.createdAt.toISOString()}>
-          {post.data.createdAt.toLocaleDateString("ko-KR")}
-        </time>
-        {
-          post.data.tags?.length && (
-            <span aria-label="tags">
-              {post.data.tags.map((tag) => `#${tag}`).join(" ")}
-            </span>
-          )
-        }
-      </div>
-    </header>
-    <div class={cn(proseClasses, "mt-6 mb-12")}>
-      <Content />
+  <ReadingProgress />
+  <div class="mx-auto w-full max-w-[1280px] px-8 pt-12 pb-24 max-md:px-4">
+    <div
+      class="grid grid-cols-1 gap-16 lg:grid-cols-[minmax(0,1fr)_280px]"
+    >
+      <article class="min-w-0">
+        <header>
+          <a
+            href="/"
+            class="inline-block font-mono text-[11px] uppercase tracking-[0.04em] text-fg-3 transition-colors hover:text-fg-1"
+          >
+            ← all writing
+          </a>
+          {
+            primaryTag && (
+              <div class="mt-6">
+                <TagPill tag={primaryTag} />
+              </div>
+            )
+          }
+          <h1
+            class="mt-4 text-[44px] font-extrabold leading-[1.1] tracking-[-0.04em] text-fg-1 max-md:text-[32px]"
+          >
+            {post.data.title}
+          </h1>
+          <p class="mt-4 max-w-[64ch] text-lg leading-[1.6] text-fg-2">
+            {post.data.description}
+          </p>
+          <div
+            class="mt-6 font-mono text-[11px] uppercase tracking-[0.04em] text-fg-3"
+          >
+            <time datetime={post.data.createdAt.toISOString()}>
+              {dateLabel}
+            </time>
+            <span class="px-1.5">·</span>
+            <span>{minutes} MIN</span>
+            <span class="px-1.5">·</span>
+            <span>{words} WORDS</span>
+          </div>
+          <hr class="mt-10 border-border" />
+        </header>
+        <div class={cn(proseClasses, "mt-10 max-w-[720px]")}>
+          <Content />
+        </div>
+        <PostFootNav prevPost={prevPost} nextPost={nextPost} />
+      </article>
+      <aside
+        data-margin-rail
+        class="hidden self-start lg:sticky lg:top-[92px] lg:block"
+        aria-label="margin rail"
+      >
+      </aside>
     </div>
-    <PostNavigation prevPost={prevPost} nextPost={nextPost} />
-  </article>
+  </div>
 </BaseLayout>

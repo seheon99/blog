@@ -1,0 +1,42 @@
+---
+---
+
+<div
+  data-reading-progress
+  class="pointer-events-none fixed inset-x-0 top-17 z-20 h-0.5 origin-left bg-brand-600"
+  style="transform: scaleX(0)"
+  aria-hidden="true"
+></div>
+
+<script>
+  const bar = document.querySelector<HTMLDivElement>(
+    "[data-reading-progress]",
+  );
+  const scrollRoot = document.querySelector<HTMLElement>("[data-scroll-root]");
+
+  if (bar) {
+    function pickEl(): HTMLElement {
+      if (
+        scrollRoot &&
+        scrollRoot.scrollHeight - scrollRoot.clientHeight > 1
+      ) {
+        return scrollRoot;
+      }
+      return document.documentElement;
+    }
+
+    function update() {
+      if (!bar) return;
+      const el = pickEl();
+      const max = el.scrollHeight - el.clientHeight;
+      const ratio =
+        max <= 0 ? 0 : Math.min(1, Math.max(0, el.scrollTop / max));
+      bar.style.transform = `scaleX(${ratio})`;
+    }
+
+    scrollRoot?.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("resize", update);
+    update();
+  }
+</script>

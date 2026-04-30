@@ -16,3 +16,9 @@ export function readMinutes(body: string): number {
   );
   return Math.max(1, minutes);
 }
+
+export function wordCount(body: string): number {
+  const text = body.replace(CODE_FENCE, "").trim();
+  if (!text) return 0;
+  return text.split(/\s+/).filter(Boolean).length;
+}
