@@ -43,6 +43,9 @@ const { Content } = await render(post);
 const body = post.body ?? "";
 const minutes = readMinutes(body);
 const words = wordCount(body);
+const primaryTag = post.data.tags?.[0];
+
+const dateLabel = post.data.createdAt
   .toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
