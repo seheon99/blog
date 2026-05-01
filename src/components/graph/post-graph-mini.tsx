@@ -1,6 +1,7 @@
 import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
 import { tagColor } from "@/lib/tag-colors";
 import { runTick } from "@/lib/post-graph-tick";
+import { formatPostDate } from "@/lib/format-date";
 import {
   forceCollide,
   forceLink,
@@ -29,16 +30,7 @@ interface InputLink {
   target: string;
 }
 
-interface SimNode extends SimulationNodeDatum {
-  id: string;
-  href: string;
-  title: string;
-  readMinutes: number;
-  primaryTag?: string;
-  description?: string;
-  createdAt?: string;
-  tags?: string[];
-}
+type SimNode = SimulationNodeDatum & { id: string; readMinutes: number };
 
 type SimLink = SimulationLinkDatum<SimNode> & { key: string };
 
@@ -179,7 +171,10 @@ export default function PostGraphMini({
   }, []);
 
   useEffect(() => {
-    const nodes: SimNode[] = rawNodes.map((n) => ({ ...n }));
+    const nodes: SimNode[] = rawNodes.map((n) => ({
+      id: n.id,
+      readMinutes: n.readMinutes,
+    }));
     const links: SimLink[] = rawLinks.map((l, i) => ({
       ...l,
       key: `${l.source}->${l.target}-${i}`,
@@ -396,13 +391,7 @@ const MiniPreviewCard = forwardRef<
   HTMLDivElement,
   { node: InputNode; pinned: boolean; onClose: () => void }
 >(function MiniPreviewCard({ node, pinned, onClose }, ref) {
-  const date = node.createdAt
-    ? new Date(node.createdAt).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      })
-    : null;
+  const date = formatPostDate(node.createdAt);
   return (
     <div
       ref={ref}

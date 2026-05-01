@@ -5,6 +5,11 @@ export type TickLink = {
   target: TickNode | string | number;
 };
 
+// Mutates SVG attributes directly instead of round-tripping through React
+// state. The d3 simulation fires `tick` at ~60 Hz; calling `setState` from it
+// would re-render the whole component tree per tick, blowing the frame
+// budget. Refs in `lineEls` / `nodeEls` are collected at render time, so the
+// JSX-to-tick mapping stays decoupled from render order.
 export function runTick(params: {
   lineEls: ReadonlyMap<string, SVGLineElement>;
   nodeEls: ReadonlyMap<string, SVGGElement>;

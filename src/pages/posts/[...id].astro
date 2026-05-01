@@ -6,6 +6,7 @@ import { getCollection, render, type CollectionEntry } from "astro:content";
 import { proseClasses } from "@/lib/prose";
 import { readMinutes, wordCount } from "@/lib/read-time";
 import { buildPostGraph, getBacklinks } from "@/lib/post-graph";
+import { formatPostDate } from "@/lib/format-date";
 import ReadingProgress from "@/components/post/reading-progress.astro";
 import TagPill from "@/components/post/tag-pill.astro";
 import PostFootNav from "@/components/post/post-foot-nav.astro";
@@ -48,13 +49,7 @@ const minutes = readMinutes(body);
 const words = wordCount(body);
 const primaryTag = post.data.tags?.[0];
 
-const dateLabel = post.data.createdAt
-  .toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  })
-  .toUpperCase();
+const dateLabel = formatPostDate(post.data.createdAt)?.toUpperCase();
 
 const allPosts = await getCollection("posts");
 const graph = buildPostGraph(allPosts);
