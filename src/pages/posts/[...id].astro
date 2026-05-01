@@ -242,38 +242,34 @@ const backlinks = getBacklinks(allPosts, post.id);
       }
     }
 
-    // IntersectionObserver collapses the root rect to a 0-height line at
-    // y=TOP (rootMargin "-TOPpx 0px -100% 0px"). For each heading we track
-    // whether it has scrolled above that line; the active heading is the
-    // last one in document order that's above. Edge-triggered: the browser
-    // calls us only when a heading crosses the line, not per scroll event.
+    // The active heading is the last one whose top has scrolled past the
+    // reading line at y=TOP. We listen to scroll events on both the inner
+    // scroll root (desktop) and window (mobile body-scroll) and recompute
+    // on rAF to avoid layout thrash.
     const TOP = 80;
-    const aboveLine = new Set<HTMLElement>();
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          const target = entry.target as HTMLElement;
-          const rootTop = entry.rootBounds?.top ?? TOP;
-          if (entry.boundingClientRect.top < rootTop) {
-            aboveLine.add(target);
-          } else {
-            aboveLine.delete(target);
-          }
+    let pending = false;
+    function update() {
+      pending = false;
+      let active: string | null = null;
+      for (const { el } of headings) {
+        if (el.getBoundingClientRect().top - TOP <= 0) {
+          active = el.id;
+        } else {
+          break;
         }
-        let active: string | null = null;
-        for (const { el } of headings) {
-          if (aboveLine.has(el)) active = el.id;
-        }
-        setActive(active ?? headings[0]?.el.id ?? null);
-      },
-      {
-        rootMargin: `-${TOP}px 0px -100% 0px`,
-        threshold: 0,
-      },
-    );
-    for (const { el } of headings) {
-      observer.observe(el);
+      }
+      setActive(active ?? headings[0]?.el.id ?? null);
     }
+    function schedule() {
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(update);
+    }
+
+    scrollRoot?.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    update();
 
     const reducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
