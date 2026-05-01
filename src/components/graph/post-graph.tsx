@@ -1,5 +1,6 @@
 import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
 import { tagColor } from "@/lib/tag-colors";
+import { formatPostDate } from "@/lib/format-date";
 import {
   forceCenter,
   forceCollide,
@@ -599,13 +600,7 @@ const PreviewCard = forwardRef<
   HTMLDivElement,
   { node: InputNode; pinned: boolean; onClose: () => void }
 >(function PreviewCard({ node, pinned, onClose }, ref) {
-  const date = node.createdAt
-    ? new Date(node.createdAt).toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      })
-    : null;
+  const date = formatPostDate(node.createdAt);
   return (
     <div
       ref={ref}

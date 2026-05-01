@@ -1,5 +1,6 @@
 ---
 import { readMinutes } from "@/lib/read-time";
+import { formatPostDate } from "@/lib/format-date";
 
 interface Props {
   title: string;
@@ -11,13 +12,7 @@ interface Props {
 const { title, createdAt, body, primaryTag } = Astro.props;
 
 const dateTime = createdAt.toISOString();
-const dateLabel = createdAt
-  .toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  })
-  .toUpperCase();
+const dateLabel = formatPostDate(createdAt)?.toUpperCase();
 const minutes = readMinutes(body);
 ---
 

@@ -231,6 +231,16 @@
     outline-offset: 2px;
     border-radius: 2px;
   }
+  /* SVG <a> elements don't render `outline` reliably across browsers.
+     Mirror the focus indicator onto the inner circle for the post-graph
+     mini rail (review §9). */
+  .post-graph-mini-node:focus-visible {
+    outline: none;
+  }
+  .post-graph-mini-node:focus-visible > circle {
+    stroke: var(--brand-500);
+    stroke-width: 3;
+  }
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
