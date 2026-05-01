@@ -198,7 +198,10 @@ const backlinks = getBacklinks(allPosts, post.id);
 </BaseLayout>
 
 <script>
-  import { setupTocScrollSpy } from "@/lib/toc-scroll-spy";
+  import {
+    setupTocScrollSpy,
+    TOC_TOP_OFFSET,
+  } from "@/lib/toc-scroll-spy";
 
   const links = Array.from(
     document.querySelectorAll<HTMLAnchorElement>("a[data-toc-link]"),
@@ -249,7 +252,9 @@ const backlinks = getBacklinks(allPosts, post.id);
         event.preventDefault();
         const scroller = getScroller();
         const top =
-          el.getBoundingClientRect().top + scroller.scrollTop - 80;
+          el.getBoundingClientRect().top +
+          scroller.scrollTop -
+          TOC_TOP_OFFSET;
         scroller.scrollTo({
           top,
           behavior: reducedMotion.matches ? "auto" : "smooth",

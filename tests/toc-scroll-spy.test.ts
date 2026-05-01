@@ -4,14 +4,20 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   setupTocScrollSpy,
   type TocHeading,
+  type TocScrollSpyOptions,
 } from "../src/lib/toc-scroll-spy";
 
 interface Fixture {
   scrollRoot: HTMLElement;
   headings: TocHeading[];
   setTops: (tops: number[]) => void;
-  teardown: () => void;
+  start: (overrides?: Partial<TocScrollSpyOptions>) => void;
+  tick: (target: EventTarget, eventName?: string) => Promise<void>;
+  flush: () => Promise<void>;
+  active: () => string | null;
 }
+
+const teardowns: Array<() => void> = [];
 
 function setupFixture(slugs: string[]): Fixture {
   document.body.innerHTML = `
@@ -32,52 +38,44 @@ function setupFixture(slugs: string[]): Fixture {
 
   const scrollRoot =
     document.querySelector<HTMLElement>("[data-scroll-root]")!;
-  const headings: TocHeading[] = slugs.map((slug) => {
-    const link = document.querySelector<HTMLAnchorElement>(
+  const headings: TocHeading[] = slugs.map((slug) => ({
+    link: document.querySelector<HTMLAnchorElement>(
       `a[data-toc-slug="${slug}"]`,
-    )!;
-    const el = document.getElementById(slug)!;
-    return { link, el };
-  });
+    )!,
+    el: document.getElementById(slug)!,
+  }));
 
   // happy-dom returns zeroed rects (no layout). Stub each heading's
-  // getBoundingClientRect so the spy can read realistic positions.
+  // getBoundingClientRect — only `.top` is read by the spy.
   const tops = new Map<HTMLElement, number>();
-  for (const { el } of headings) tops.set(el, 1000);
   for (const { el } of headings) {
+    tops.set(el, 1000);
     el.getBoundingClientRect = () =>
-      ({
-        top: tops.get(el)!,
-        bottom: tops.get(el)! + 24,
-        left: 0,
-        right: 0,
-        width: 0,
-        height: 24,
-        x: 0,
-        y: tops.get(el)!,
-        toJSON: () => ({}),
-      }) as DOMRect;
+      ({ top: tops.get(el)! }) as DOMRect;
   }
+
+  const flush = () =>
+    new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
 
   return {
     scrollRoot,
     headings,
-    setTops: (next) => {
-      next.forEach((t, i) => tops.set(headings[i].el, t));
+    flush,
+    setTops: (next) => next.forEach((t, i) => tops.set(headings[i].el, t)),
+    start: (overrides) => {
+      teardowns.push(
+        setupTocScrollSpy({ headings, scrollRoot, ...overrides }),
+      );
     },
-    teardown: () => {
-      document.body.innerHTML = "";
+    tick: async (target, eventName = "scroll") => {
+      target.dispatchEvent(new Event(eventName));
+      await flush();
+    },
+    active: () => {
+      const hit = headings.find((h) => h.link.dataset.active === "true");
+      return hit ? (hit.link.dataset.tocSlug ?? null) : null;
     },
   };
-}
-
-function flushRaf(): Promise<void> {
-  return new Promise((resolve) => requestAnimationFrame(() => resolve()));
-}
-
-function activeSlug(headings: TocHeading[]): string | null {
-  const hit = headings.find((h) => h.link.dataset.active === "true");
-  return hit ? (hit.link.dataset.tocSlug ?? null) : null;
 }
 
 describe("setupTocScrollSpy", () => {
@@ -88,108 +86,75 @@ describe("setupTocScrollSpy", () => {
   });
 
   afterEach(() => {
-    fx.teardown();
+    while (teardowns.length) teardowns.pop()!();
+    document.body.innerHTML = "";
   });
 
   it("falls back to the first heading when nothing has scrolled past the line", async () => {
     fx.setTops([200, 400, 600]);
-    const teardown = setupTocScrollSpy({
-      headings: fx.headings,
-      scrollRoot: fx.scrollRoot,
-    });
-    await flushRaf();
-    expect(activeSlug(fx.headings)).toBe("a");
-    teardown();
+    fx.start();
+    await fx.flush();
+    expect(fx.active()).toBe("a");
   });
 
   it("activates the last heading whose top has crossed the 80px reading line", async () => {
     fx.setTops([50, 300, 600]);
-    const teardown = setupTocScrollSpy({
-      headings: fx.headings,
-      scrollRoot: fx.scrollRoot,
-    });
-    await flushRaf();
-    expect(activeSlug(fx.headings)).toBe("a");
+    fx.start();
+    await fx.flush();
+    expect(fx.active()).toBe("a");
 
     fx.setTops([-100, 50, 400]);
-    fx.scrollRoot.dispatchEvent(new Event("scroll"));
-    await flushRaf();
-    expect(activeSlug(fx.headings)).toBe("b");
+    await fx.tick(fx.scrollRoot);
+    expect(fx.active()).toBe("b");
 
     fx.setTops([-400, -200, 60]);
-    fx.scrollRoot.dispatchEvent(new Event("scroll"));
-    await flushRaf();
-    expect(activeSlug(fx.headings)).toBe("c");
-    teardown();
+    await fx.tick(fx.scrollRoot);
+    expect(fx.active()).toBe("c");
   });
 
   it("returns to the first heading after scrolling back above all headings", async () => {
     fx.setTops([-100, 50, 400]);
-    const teardown = setupTocScrollSpy({
-      headings: fx.headings,
-      scrollRoot: fx.scrollRoot,
-    });
-    await flushRaf();
-    expect(activeSlug(fx.headings)).toBe("b");
+    fx.start();
+    await fx.flush();
+    expect(fx.active()).toBe("b");
 
     fx.setTops([200, 400, 600]);
-    fx.scrollRoot.dispatchEvent(new Event("scroll"));
-    await flushRaf();
-    expect(activeSlug(fx.headings)).toBe("a");
-    teardown();
+    await fx.tick(fx.scrollRoot);
+    expect(fx.active()).toBe("a");
   });
 
   it("updates on window scroll (mobile body-scroll path)", async () => {
     fx.setTops([200, 400, 600]);
-    const teardown = setupTocScrollSpy({
-      headings: fx.headings,
-      scrollRoot: null,
-    });
-    await flushRaf();
-    expect(activeSlug(fx.headings)).toBe("a");
+    fx.start({ scrollRoot: null });
+    await fx.flush();
+    expect(fx.active()).toBe("a");
 
     fx.setTops([-100, 50, 400]);
-    window.dispatchEvent(new Event("scroll"));
-    await flushRaf();
-    expect(activeSlug(fx.headings)).toBe("b");
-    teardown();
+    await fx.tick(window);
+    expect(fx.active()).toBe("b");
   });
 
   it("updates on window resize", async () => {
     fx.setTops([200, 400, 600]);
-    const teardown = setupTocScrollSpy({
-      headings: fx.headings,
-      scrollRoot: fx.scrollRoot,
-    });
-    await flushRaf();
-    expect(activeSlug(fx.headings)).toBe("a");
+    fx.start();
+    await fx.flush();
 
     fx.setTops([-100, 50, 400]);
-    window.dispatchEvent(new Event("resize"));
-    await flushRaf();
-    expect(activeSlug(fx.headings)).toBe("b");
-    teardown();
+    await fx.tick(window, "resize");
+    expect(fx.active()).toBe("b");
   });
 
   it("respects a custom topOffset", async () => {
     fx.setTops([150, 300, 600]);
-    const teardown = setupTocScrollSpy({
-      headings: fx.headings,
-      scrollRoot: fx.scrollRoot,
-      topOffset: 200,
-    });
-    await flushRaf();
-    expect(activeSlug(fx.headings)).toBe("a");
-    teardown();
+    fx.start({ topOffset: 200 });
+    await fx.flush();
+    expect(fx.active()).toBe("a");
   });
 
   it("coalesces bursts of scroll events into a single rAF tick", async () => {
     fx.setTops([200, 400, 600]);
-    const teardown = setupTocScrollSpy({
-      headings: fx.headings,
-      scrollRoot: fx.scrollRoot,
-    });
-    await flushRaf();
+    fx.start();
+    await fx.flush();
 
     let calls = 0;
     for (const { el } of fx.headings) {
@@ -203,33 +168,25 @@ describe("setupTocScrollSpy", () => {
     fx.setTops([-100, 50, 400]);
     fx.scrollRoot.dispatchEvent(new Event("scroll"));
     fx.scrollRoot.dispatchEvent(new Event("scroll"));
-    fx.scrollRoot.dispatchEvent(new Event("scroll"));
-    await flushRaf();
+    await fx.tick(fx.scrollRoot);
 
     // One rAF tick reads each heading once.
     expect(calls).toBe(fx.headings.length);
-    teardown();
   });
 
   it("removes its listeners on teardown", async () => {
     fx.setTops([200, 400, 600]);
-    const teardown = setupTocScrollSpy({
-      headings: fx.headings,
-      scrollRoot: fx.scrollRoot,
-    });
-    await flushRaf();
-    expect(activeSlug(fx.headings)).toBe("a");
+    fx.start();
+    await fx.flush();
+    expect(fx.active()).toBe("a");
 
-    teardown();
+    while (teardowns.length) teardowns.pop()!();
 
     fx.setTops([-100, 50, 400]);
-    fx.scrollRoot.dispatchEvent(new Event("scroll"));
-    window.dispatchEvent(new Event("scroll"));
-    window.dispatchEvent(new Event("resize"));
-    await flushRaf();
-
-    // Active should not have moved past the initial pick.
-    expect(activeSlug(fx.headings)).toBe("a");
+    await fx.tick(fx.scrollRoot);
+    await fx.tick(window);
+    await fx.tick(window, "resize");
+    expect(fx.active()).toBe("a");
   });
 
   it("is a no-op when there are no headings", () => {

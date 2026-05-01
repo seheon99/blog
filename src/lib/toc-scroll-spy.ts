@@ -1,3 +1,8 @@
+// Reading line — headings whose top has crossed this y-coordinate count as
+// "scrolled past". Shared by the scroll-spy and by the click-to-scroll
+// handler in src/pages/posts/[...id].astro so both stay in lockstep.
+export const TOC_TOP_OFFSET = 80;
+
 export interface TocHeading {
   link: HTMLAnchorElement;
   el: HTMLElement;
@@ -16,11 +21,11 @@ export interface TocScrollSpyOptions {
 export function setupTocScrollSpy({
   headings,
   scrollRoot,
-  topOffset = 80,
+  topOffset = TOC_TOP_OFFSET,
 }: TocScrollSpyOptions): () => void {
   if (headings.length === 0) return () => {};
 
-  function setActive(slug: string | null) {
+  function setActive(slug: string) {
     for (const { link } of headings) {
       link.dataset.active = link.dataset.tocSlug === slug ? "true" : "false";
     }
@@ -29,15 +34,12 @@ export function setupTocScrollSpy({
   let pending = false;
   function update() {
     pending = false;
-    let active: string | null = null;
+    let active = headings[0].el.id;
     for (const { el } of headings) {
-      if (el.getBoundingClientRect().top - topOffset <= 0) {
-        active = el.id;
-      } else {
-        break;
-      }
+      if (el.getBoundingClientRect().top - topOffset > 0) break;
+      active = el.id;
     }
-    setActive(active ?? headings[0]?.el.id ?? null);
+    setActive(active);
   }
   function schedule() {
     if (pending) return;
