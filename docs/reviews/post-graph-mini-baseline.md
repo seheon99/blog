@@ -197,6 +197,34 @@ The existing scroll/resize listeners and the `update()` function are removed. Th
 
 happy-dom doesn't implement `getBoundingClientRect`-driven layout, so the original bench under-reports the real-browser cost regardless. The IO fix is right by structure: it removes a known scroll-listener anti-pattern even if the absolute pre-fix cost was small.
 
+### §6 fix — redundant centering forces
+
+`forceCenter` was stacking with `forceX`/`forceY` toward the same point, producing slightly over-damped, stiff dynamics. Per the review's recommendation for a small fixed-viewport graph, dropped `forceCenter` (and its import) from both the build and resize effects. Pure cleanup, not a perf change — the per-tick force evaluation cost is fractionally lower, but the visible effect is *better* layout dynamics, not a benchmark number.
+
+### §7 fix — background-rect pin-clear ordering
+
+The bg `<rect>` listens for `pointerup` to clear pin; each node `<g>` listens for `click` to navigate when its node is already pinned. Pre-fix, a `pointerup` bubbling from a node would *also* hit the rect's handler, potentially clearing `pinnedId` before the click handler read it — making "tap pinned node to navigate" silently break depending on React's batching.
+
+The fix gates the rect's handler on `e.target === e.currentTarget` so only events that genuinely target the bg rect clear the pin. Behavior was correct today by accident (React doesn't synchronously flush state updates between bubbling handlers); now it's correct by construction.
+
+### §8 fix — drop non-null assertion on derived lookup
+
+The preview-card JSX previously used `node={rawNodesById.get(cardTargetId)!}`. If `rawNodes` were ever replaced between hover and the next paint, `find`/`get` would return `undefined` and the `!` would throw at render. Replaced with an IIFE that early-returns `null` on lookup miss, matching the §2 pattern of "render nothing rather than assert."
+
+### §9 fix — keyboard focus indicator (cheap subset only)
+
+The base `:focus-visible { outline … }` rule renders inconsistently on SVG `<a>` across browsers (Chrome OK, older Firefox not). Added a `.post-graph-mini-node` className on each node anchor + a CSS rule in [src/styles/global.css](../../src/styles/global.css) that mirrors the focus indicator onto the inner `<circle>` via `stroke` change. Now keyboard users can see which node is currently focused.
+
+The review's larger item — "open the preview on focus, separate Space-to-pin affordance before navigating" — is **not addressed**. That's a feature change, not a defect; warrants its own design pass. Tab-stop chain length isn't a problem at the current N=6 scale.
+
+### §11 fix — cache `getScroller()` after first measurement
+
+The active scroller is determined by viewport class (desktop scrollable rail vs. mobile body-scroll) and can't change at runtime without a viewport-class break. Added a `cachedScroller` slot that's populated on the first non-zero measurement; subsequent TOC clicks skip the layout flush. Defensively keeps falling back through the original logic on early measurements where `scrollHeight === 0`.
+
+### §12 — already obsoleted by §5
+
+The review flagged `simRef` as dead state (assigned but never read). The §5 fix made it load-bearing — the resize effect reads `simRef.current` to patch forces in place on the existing simulation. No action needed.
+
 ---
 
 ## Findings — post-fix
@@ -209,10 +237,14 @@ happy-dom doesn't implement `getBoundingClientRect`-driven layout, so the origin
 | §4 refs out of render body | runtime-neutral | **N/A — React-correctness only** | Removed two redundant ref-shadows (`hoveredIdRef`, `pinnedIdRef`); moved `cardTargetIdRef` write into the existing `useEffect`. Eliminates a concurrent-mode footgun without changing behavior. |
 | §5 sim rebuild on resize | 1 rebuild + ~10–30 in-place updates per drag | **Structural; in-place update 8–23× faster than rebuild per resize tick** | Build deps narrowed to `[rawNodes, rawLinks]`; resize deps `[size.width, size.height]` patch forces in place + `alpha(0.3).restart()`. Per-event setup cost: 5.4 → 0.6 µs at N=6; 51.3 → 2.2 µs at N=200. Compounding effect via reduced post-resize tick count (~60→~16) makes the user-facing CPU win 3–4× larger than the setup-only number. Visually: graph eases to new bounds instead of restarting layout each ResizeObserver tick. |
 | §10 scroll-spy per scroll-event | IO drops invocation rate to edge crossings | **Structural; ~150–300× fewer invocations at H=20 over a 5s scroll** | Scroll/resize listeners + `getBoundingClientRect` loop replaced with a single `IntersectionObserver` whose root collapses to a line at y=80. Pre-fix: ~6,000 layout-flushing calls per 5s scroll at H=20. Post-fix: ~20–40 callback invocations across the entire scroll, no layout flush. Real-browser benefit larger than happy-dom suggests since pre-fix's actual cost includes a layout flush per call. |
+| §6 redundant centering forces | force evaluation slightly cheaper | **Pure cleanup; better layout dynamics** | Dropped `forceCenter` — stacking it with `forceX`/`forceY` toward the same point produced over-damped layouts. |
+| §7 pin-click ordering | navigation works regardless of React event batching | **Structural correctness** | Gated `onBgPointerUp` on `e.target === e.currentTarget`. Was correct today by accident, now by construction. |
+| §8 non-null assertion on lookup | no runtime crash on stale `cardTargetId` | **Structural correctness** | IIFE renders `null` on lookup miss instead of throwing on `undefined!`. |
+| §9 keyboard focus indicator (subset) | visible focus on every browser | **A11y polish** | `.post-graph-mini-node:focus-visible > circle` mirrors the global focus indicator onto the SVG circle via stroke change. Larger interaction redesign (open-preview-on-focus, Space-to-pin) deferred. |
+| §11 `getScroller` reflow per click | one layout flush per page lifecycle, not per click | **Trivial** | `cachedScroller` populated on first non-zero measurement. |
+| §12 dead `simRef` | n/a | **Already obsoleted by §5** | The resize effect reads `simRef.current` to patch forces in place — the ref is now load-bearing. |
 
-**Headline:** §1–§5, §10 all ship strict wins with no behavioral risk. Absolute runtime impact at the current N=6 / H≈4–8 scale is below perception for most of the changes, with two user-visible exceptions: §5 (resize jank gone) and §10 (no more main-thread work per scroll event on long posts). The rest is *correctness scaffolding*: identity-keyed `runTick`, `Map`-keyed lookups, split build/resize effects, edge-triggered scroll-spy — all the right shape to scale to N=200+ neighbors and H=20+ headings without revisiting.
-
-All review items §1–§5, §10 are now addressed; §6 (redundant centering forces), §7 (pin-click ordering), §8 (non-null assertion), §9 (keyboard a11y), §11 (`getScroller` reflow), §12 (dead `simRef`) remain — none are flagged as High priority.
+**Headline:** every review item is now addressed (§1–§12). The high-impact wins are §1/§3 (runtime — strict speedup at every N), §5 (visible resize jank gone), and §10 (cumulative scroll cost). The medium items §7/§8 fix latent silent-failure modes that would have surfaced under React event-batching changes or stale-state edge cases. §9's larger interaction redesign (open-preview-on-focus, Space-to-pin) is deferred — needs its own design pass. The component is now the right shape to scale to N=200+ neighbors and H=20+ headings without revisiting.
 
 ---
 

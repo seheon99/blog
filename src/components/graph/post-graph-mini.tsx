@@ -2,7 +2,6 @@ import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
 import { tagColor } from "@/lib/tag-colors";
 import { runTick } from "@/lib/post-graph-tick";
 import {
-  forceCenter,
   forceCollide,
   forceLink,
   forceManyBody,
@@ -141,7 +140,13 @@ export default function PostGraphMini({
     setHoveredId(null);
   }
 
-  function onBgPointerUp() {
+  function onBgPointerUp(e: React.PointerEvent<SVGRectElement>) {
+    // Only clear pin when the gesture started AND ended on the bg rect itself.
+    // Without this guard, a pointerup bubbling from a node would race the
+    // node's onClick — clearing pinnedId before the click handler reads it,
+    // making "click pinned node to navigate" silently break depending on
+    // React's batching.
+    if (e.target !== e.currentTarget) return;
     setPinnedId(null);
   }
 
@@ -207,9 +212,8 @@ export default function PostGraphMini({
           .strength(0.5),
       )
       .force("charge", forceManyBody().strength(-80))
-      .force("center", forceCenter(size.width / 2, size.height / 2))
-      .force("x", forceX(size.width / 2).strength(0.08))
-      .force("y", forceY(size.height / 2).strength(0.08))
+      .force("x", forceX<SimNode>(size.width / 2).strength(0.08))
+      .force("y", forceY<SimNode>(size.height / 2).strength(0.08))
       .force(
         "collide",
         forceCollide<SimNode>().radius((d) => radiusFor(d.readMinutes) + 3),
@@ -236,7 +240,6 @@ export default function PostGraphMini({
     const sim = simRef.current;
     if (sim) {
       sim
-        .force("center", forceCenter(size.width / 2, size.height / 2))
         .force("x", forceX<SimNode>(size.width / 2).strength(0.08))
         .force("y", forceY<SimNode>(size.height / 2).strength(0.08));
       sim.alpha(0.3).restart();
@@ -326,7 +329,11 @@ export default function PostGraphMini({
                 transition: "opacity 200ms",
               }}
             >
-              <a href={n.href} aria-label={n.title}>
+              <a
+                href={n.href}
+                aria-label={n.title}
+                className="post-graph-mini-node"
+              >
                 <circle
                   r={isActive || isPinned ? r + 1.5 : r}
                   fill={tagColor(n.primaryTag)}
@@ -368,14 +375,19 @@ export default function PostGraphMini({
           );
         })}
       </svg>
-      {cardTargetId && (
-        <MiniPreviewCard
-          ref={cardRef}
-          node={rawNodesById.get(cardTargetId)!}
-          pinned={pinnedId === cardTargetId}
-          onClose={() => setPinnedId(null)}
-        />
-      )}
+      {(() => {
+        if (!cardTargetId) return null;
+        const node = rawNodesById.get(cardTargetId);
+        if (!node) return null;
+        return (
+          <MiniPreviewCard
+            ref={cardRef}
+            node={node}
+            pinned={pinnedId === cardTargetId}
+            onClose={() => setPinnedId(null)}
+          />
+        );
+      })()}
     </div>
   );
 }

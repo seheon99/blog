@@ -219,14 +219,26 @@ const backlinks = getBacklinks(allPosts, post.id);
     const scrollRoot =
       document.querySelector<HTMLElement>("[data-scroll-root]");
 
-    // On desktop the [data-scroll-root] div scrolls and `window.scroll` never
-    // fires; on mobile body-scroll, scrollRoot has no scrollable height and
-    // we must fall back to window. Listen on both.
+    // On desktop the [data-scroll-root] div scrolls; on mobile body-scroll,
+    // scrollRoot has no scrollable height and we fall back to documentElement.
+    // The active scroller can't change without a viewport-class change, so
+    // cache after the first non-zero measurement to skip a layout flush per
+    // TOC click.
+    let cachedScroller: HTMLElement | null = null;
     function getScroller(): HTMLElement {
+      if (cachedScroller) return cachedScroller;
       if (scrollRoot && scrollRoot.scrollHeight - scrollRoot.clientHeight > 1) {
+        cachedScroller = scrollRoot;
         return scrollRoot;
       }
-      return document.documentElement;
+      // Don't cache documentElement until we've confirmed scrollRoot is
+      // genuinely not the scroller (i.e., it has no scrollable content yet).
+      // Early measurements may return zero before layout.
+      if (scrollRoot && scrollRoot.scrollHeight === 0) {
+        return document.documentElement;
+      }
+      cachedScroller = document.documentElement;
+      return cachedScroller;
     }
 
     function setActive(slug: string | null) {
