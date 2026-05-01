@@ -198,6 +198,11 @@ const backlinks = getBacklinks(allPosts, post.id);
 </BaseLayout>
 
 <script>
+  import {
+    setupTocScrollSpy,
+    TOC_TOP_OFFSET,
+  } from "@/lib/toc-scroll-spy";
+
   const links = Array.from(
     document.querySelectorAll<HTMLAnchorElement>("a[data-toc-link]"),
   );
@@ -213,6 +218,8 @@ const backlinks = getBacklinks(allPosts, post.id);
 
     const scrollRoot =
       document.querySelector<HTMLElement>("[data-scroll-root]");
+
+    setupTocScrollSpy({ headings, scrollRoot });
 
     // On desktop the [data-scroll-root] div scrolls; on mobile body-scroll,
     // scrollRoot has no scrollable height and we fall back to documentElement.
@@ -236,45 +243,6 @@ const backlinks = getBacklinks(allPosts, post.id);
       return cachedScroller;
     }
 
-    function setActive(slug: string | null) {
-      for (const { link } of headings) {
-        link.dataset.active = link.dataset.tocSlug === slug ? "true" : "false";
-      }
-    }
-
-    // IntersectionObserver collapses the root rect to a 0-height line at
-    // y=TOP (rootMargin "-TOPpx 0px -100% 0px"). For each heading we track
-    // whether it has scrolled above that line; the active heading is the
-    // last one in document order that's above. Edge-triggered: the browser
-    // calls us only when a heading crosses the line, not per scroll event.
-    const TOP = 80;
-    const aboveLine = new Set<HTMLElement>();
-    const observer = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          const target = entry.target as HTMLElement;
-          const rootTop = entry.rootBounds?.top ?? TOP;
-          if (entry.boundingClientRect.top < rootTop) {
-            aboveLine.add(target);
-          } else {
-            aboveLine.delete(target);
-          }
-        }
-        let active: string | null = null;
-        for (const { el } of headings) {
-          if (aboveLine.has(el)) active = el.id;
-        }
-        setActive(active ?? headings[0]?.el.id ?? null);
-      },
-      {
-        rootMargin: `-${TOP}px 0px -100% 0px`,
-        threshold: 0,
-      },
-    );
-    for (const { el } of headings) {
-      observer.observe(el);
-    }
-
     const reducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
     );
@@ -284,7 +252,9 @@ const backlinks = getBacklinks(allPosts, post.id);
         event.preventDefault();
         const scroller = getScroller();
         const top =
-          el.getBoundingClientRect().top + scroller.scrollTop - 80;
+          el.getBoundingClientRect().top +
+          scroller.scrollTop -
+          TOC_TOP_OFFSET;
         scroller.scrollTo({
           top,
           behavior: reducedMotion.matches ? "auto" : "smooth",
