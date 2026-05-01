@@ -216,28 +216,57 @@ const backlinks = getBacklinks(allPosts, post.id);
       })
       .filter((h): h is { link: HTMLAnchorElement; el: HTMLElement } => !!h);
 
+    const scrollRoot =
+      document.querySelector<HTMLElement>("[data-scroll-root]");
+
+    // On desktop the [data-scroll-root] div scrolls and `window.scroll` never
+    // fires; on mobile body-scroll, scrollRoot has no scrollable height and
+    // we must fall back to window. Listen on both.
+    function getScroller(): HTMLElement {
+      if (scrollRoot && scrollRoot.scrollHeight - scrollRoot.clientHeight > 1) {
+        return scrollRoot;
+      }
+      return document.documentElement;
+    }
+
     function setActive(slug: string | null) {
       for (const { link } of headings) {
         link.dataset.active = link.dataset.tocSlug === slug ? "true" : "false";
       }
     }
 
-    function update() {
-      const top = 80;
-      let active: string | null = null;
-      for (const { el } of headings) {
-        if (el.getBoundingClientRect().top - top <= 0) {
-          active = el.id;
-        } else {
-          break;
+    // IntersectionObserver collapses the root rect to a 0-height line at
+    // y=TOP (rootMargin "-TOPpx 0px -100% 0px"). For each heading we track
+    // whether it has scrolled above that line; the active heading is the
+    // last one in document order that's above. Edge-triggered: the browser
+    // calls us only when a heading crosses the line, not per scroll event.
+    const TOP = 80;
+    const aboveLine = new Set<HTMLElement>();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const target = entry.target as HTMLElement;
+          const rootTop = entry.rootBounds?.top ?? TOP;
+          if (entry.boundingClientRect.top < rootTop) {
+            aboveLine.add(target);
+          } else {
+            aboveLine.delete(target);
+          }
         }
-      }
-      setActive(active ?? headings[0]?.el.id ?? null);
+        let active: string | null = null;
+        for (const { el } of headings) {
+          if (aboveLine.has(el)) active = el.id;
+        }
+        setActive(active ?? headings[0]?.el.id ?? null);
+      },
+      {
+        rootMargin: `-${TOP}px 0px -100% 0px`,
+        threshold: 0,
+      },
+    );
+    for (const { el } of headings) {
+      observer.observe(el);
     }
-
-    window.addEventListener("scroll", update, { passive: true });
-    window.addEventListener("resize", update, { passive: true });
-    update();
 
     const reducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
@@ -246,8 +275,10 @@ const backlinks = getBacklinks(allPosts, post.id);
     for (const { link, el } of headings) {
       link.addEventListener("click", (event) => {
         event.preventDefault();
-        const top = el.getBoundingClientRect().top + window.scrollY - 80;
-        window.scrollTo({
+        const scroller = getScroller();
+        const top =
+          el.getBoundingClientRect().top + scroller.scrollTop - 80;
+        scroller.scrollTo({
           top,
           behavior: reducedMotion.matches ? "auto" : "smooth",
         });

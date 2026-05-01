@@ -1,5 +1,8 @@
 references
 
+# Generated perf baseline artifacts (Lighthouse HTML/JSON, etc.)
+docs/reviews/baselines/
+
 # Logs
 logs
 *.log

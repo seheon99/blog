@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
 import { tagColor } from "@/lib/tag-colors";
+import { runTick } from "@/lib/post-graph-tick";
 import {
   forceCenter,
   forceCollide,
@@ -19,6 +20,9 @@ interface InputNode {
   title: string;
   readMinutes: number;
   primaryTag?: string;
+  description?: string;
+  createdAt?: string;
+  tags?: string[];
 }
 
 interface InputLink {
@@ -32,9 +36,12 @@ interface SimNode extends SimulationNodeDatum {
   title: string;
   readMinutes: number;
   primaryTag?: string;
+  description?: string;
+  createdAt?: string;
+  tags?: string[];
 }
 
-type SimLink = SimulationLinkDatum<SimNode>;
+type SimLink = SimulationLinkDatum<SimNode> & { key: string };
 
 interface Props {
   nodes: InputNode[];
@@ -50,6 +57,20 @@ function radiusFor(readMinutes: number): number {
   return MIN_R + (MAX_R - MIN_R) * t;
 }
 
+function placeNodesCircular(nodes: SimNode[], width: number, height: number) {
+  const cx = width / 2;
+  const cy = height / 2;
+  const r = Math.max(40, Math.min(cx, cy) - 24);
+  const total = Math.max(nodes.length, 1);
+  nodes.forEach((n, i) => {
+    const angle = (i / total) * Math.PI * 2 - Math.PI / 2;
+    n.x = cx + r * Math.cos(angle);
+    n.y = cy + r * Math.sin(angle);
+    n.fx = n.x;
+    n.fy = n.y;
+  });
+}
+
 export default function PostGraphMini({
   nodes: rawNodes,
   links: rawLinks,
@@ -58,9 +79,71 @@ export default function PostGraphMini({
   const containerRef = useRef<HTMLDivElement | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [size, setSize] = useState({ width: 280, height: 220 });
-  const simNodesRef = useRef<SimNode[]>([]);
+  const simNodesByIdRef = useRef<Map<string, SimNode>>(new Map());
   const simLinksRef = useRef<SimLink[]>([]);
   const simRef = useRef<Simulation<SimNode, SimLink> | null>(null);
+  const lastAppliedSizeRef = useRef<{ w: number; h: number } | null>(null);
+  const lineRefsByKey = useRef<Map<string, SVGLineElement>>(new Map());
+  const nodeRefsByKey = useRef<Map<string, SVGGElement>>(new Map());
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [pinnedId, setPinnedId] = useState<string | null>(null);
+  const [reducedMotion, setReducedMotion] = useState(false);
+  const cardRef = useRef<HTMLDivElement | null>(null);
+  const cardTargetId = pinnedId ?? hoveredId;
+  // Bridges cardTargetId into the sim tick closure, which is captured outside
+  // of render. Assigned in an effect (not in render body) so concurrent /
+  // discarded renders never desync the ref from committed state.
+  const cardTargetIdRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    const mql = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = () => setReducedMotion(mql.matches);
+    update();
+    mql.addEventListener("change", update);
+    return () => mql.removeEventListener("change", update);
+  }, []);
+
+  function updateCardPosition() {
+    const id = cardTargetIdRef.current;
+    const card = cardRef.current;
+    if (!id || !card) return;
+    const node = simNodesByIdRef.current.get(id);
+    if (!node || node.x == null || node.y == null) return;
+    const r = radiusFor(node.readMinutes);
+    // The mini graph is narrow; default to anchoring left of the node so the
+    // card stays inside the rail when there's room. If the node is in the
+    // left half of the SVG, flip to the right side.
+    const cardWidth = 240;
+    const placeRight = node.x < size.width / 2;
+    const x = placeRight
+      ? node.x + r + 10
+      : node.x - r - 10 - cardWidth;
+    const y = Math.max(0, node.y - 28);
+    card.style.transform = `translate(${x}px, ${y}px)`;
+  }
+
+  useEffect(() => {
+    cardTargetIdRef.current = cardTargetId;
+    updateCardPosition();
+  }, [cardTargetId]);
+
+  function onNodeClick(e: React.MouseEvent<SVGGElement>, id: string) {
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) {
+      return; // browser default: open in new tab via the inner <a href>.
+    }
+    e.preventDefault();
+    if (pinnedId === id) {
+      const node = rawNodesById.get(id);
+      if (node) window.location.href = node.href;
+      return;
+    }
+    setPinnedId(id);
+    setHoveredId(null);
+  }
+
+  function onBgPointerUp() {
+    setPinnedId(null);
+  }
 
   const neighbors = useMemo(() => {
     const set = new Set<string>();
@@ -70,6 +153,11 @@ export default function PostGraphMini({
     }
     return set;
   }, [rawLinks, activeId]);
+
+  const rawNodesById = useMemo(
+    () => new Map(rawNodes.map((n) => [n.id, n])),
+    [rawNodes],
+  );
 
   useEffect(() => {
     const el = containerRef.current;
@@ -87,42 +175,25 @@ export default function PostGraphMini({
 
   useEffect(() => {
     const nodes: SimNode[] = rawNodes.map((n) => ({ ...n }));
-    const links: SimLink[] = rawLinks.map((l) => ({ ...l }));
-    simNodesRef.current = nodes;
+    const links: SimLink[] = rawLinks.map((l, i) => ({
+      ...l,
+      key: `${l.source}->${l.target}-${i}`,
+    }));
+    simNodesByIdRef.current = new Map(nodes.map((n) => [n.id, n]));
     simLinksRef.current = links;
+    lastAppliedSizeRef.current = { w: size.width, h: size.height };
 
-    const tick = () => {
-      const svg = svgRef.current;
-      if (!svg) return;
-      const lineEls = svg.querySelectorAll<SVGLineElement>("line[data-link]");
-      lineEls.forEach((el, i) => {
-        const link = links[i];
-        const s = link.source as SimNode;
-        const t = link.target as SimNode;
-        el.setAttribute("x1", String(s.x ?? 0));
-        el.setAttribute("y1", String(s.y ?? 0));
-        el.setAttribute("x2", String(t.x ?? 0));
-        el.setAttribute("y2", String(t.y ?? 0));
+    const tick = () =>
+      runTick({
+        lineEls: lineRefsByKey.current,
+        nodeEls: nodeRefsByKey.current,
+        nodes,
+        links,
+        onAfterTick: updateCardPosition,
       });
-      const groupEls = svg.querySelectorAll<SVGGElement>("g[data-node]");
-      groupEls.forEach((el, i) => {
-        const n = nodes[i];
-        el.setAttribute("transform", `translate(${n.x ?? 0},${n.y ?? 0})`);
-      });
-    };
 
     if (rawLinks.length === 0) {
-      const cx = size.width / 2;
-      const cy = size.height / 2;
-      const r = Math.max(40, Math.min(cx, cy) - 24);
-      const total = Math.max(nodes.length, 1);
-      nodes.forEach((n, i) => {
-        const angle = (i / total) * Math.PI * 2 - Math.PI / 2;
-        n.x = cx + r * Math.cos(angle);
-        n.y = cy + r * Math.sin(angle);
-        n.fx = n.x;
-        n.fy = n.y;
-      });
+      placeNodesCircular(nodes, size.width, size.height);
       tick();
       return;
     }
@@ -152,12 +223,42 @@ export default function PostGraphMini({
       sim.on("tick", null);
       simRef.current = null;
     };
-  }, [rawNodes, rawLinks, size.width, size.height]);
+    // size intentionally omitted — resize is handled in the effect below by
+    // updating forces in place rather than rebuilding the simulation.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rawNodes, rawLinks]);
+
+  useEffect(() => {
+    const last = lastAppliedSizeRef.current;
+    if (last && last.w === size.width && last.h === size.height) return;
+    lastAppliedSizeRef.current = { w: size.width, h: size.height };
+
+    const sim = simRef.current;
+    if (sim) {
+      sim
+        .force("center", forceCenter(size.width / 2, size.height / 2))
+        .force("x", forceX<SimNode>(size.width / 2).strength(0.08))
+        .force("y", forceY<SimNode>(size.height / 2).strength(0.08));
+      sim.alpha(0.3).restart();
+      return;
+    }
+    // No active sim → empty-links fallback. Re-pin nodes and re-tick.
+    const nodes = Array.from(simNodesByIdRef.current.values());
+    if (nodes.length === 0) return;
+    placeNodesCircular(nodes, size.width, size.height);
+    runTick({
+      lineEls: lineRefsByKey.current,
+      nodeEls: nodeRefsByKey.current,
+      nodes,
+      links: simLinksRef.current,
+      onAfterTick: updateCardPosition,
+    });
+  }, [size.width, size.height]);
 
   return (
     <div
       ref={containerRef}
-      className="relative h-[220px] w-full overflow-hidden rounded-[10px] border border-border bg-bg-2"
+      className="relative h-[220px] w-full rounded-[10px] border border-border bg-bg-2"
       aria-label="post neighborhood graph"
     >
       <svg
@@ -167,13 +268,24 @@ export default function PostGraphMini({
         role="img"
         aria-label={`${rawNodes.length} posts, ${rawLinks.length} links`}
       >
+        <rect
+          width={size.width}
+          height={size.height}
+          fill="transparent"
+          onPointerUp={onBgPointerUp}
+        />
         <g aria-hidden="true">
           {rawLinks.map((link, i) => {
             const touchesActive =
               link.source === activeId || link.target === activeId;
+            const linkKey = `${link.source}->${link.target}-${i}`;
             return (
               <line
-                key={`${link.source}->${link.target}-${i}`}
+                key={linkKey}
+                ref={(el) => {
+                  if (el) lineRefsByKey.current.set(linkKey, el);
+                  else lineRefsByKey.current.delete(linkKey);
+                }}
                 data-link
                 stroke={
                   touchesActive ? "var(--brand-500)" : "var(--border)"
@@ -189,11 +301,25 @@ export default function PostGraphMini({
           const isActive = n.id === activeId;
           const isNeighbor = neighbors.has(n.id);
           const dim = !isActive && !isNeighbor;
+          const isPinned = pinnedId === n.id;
           return (
             <g
               key={n.id}
+              ref={(el) => {
+                if (el) nodeRefsByKey.current.set(n.id, el);
+                else nodeRefsByKey.current.delete(n.id);
+              }}
               data-node
               data-id={n.id}
+              onPointerEnter={() => {
+                if (pinnedId) return;
+                setHoveredId(n.id);
+              }}
+              onPointerLeave={() => {
+                if (pinnedId) return;
+                if (hoveredId === n.id) setHoveredId(null);
+              }}
+              onClick={(e) => onNodeClick(e, n.id)}
               style={{
                 cursor: "pointer",
                 opacity: dim ? 0.32 : 1,
@@ -202,16 +328,132 @@ export default function PostGraphMini({
             >
               <a href={n.href} aria-label={n.title}>
                 <circle
-                  r={isActive ? r + 1.5 : r}
+                  r={isActive || isPinned ? r + 1.5 : r}
                   fill={tagColor(n.primaryTag)}
-                  stroke={isActive ? "var(--brand-500)" : "var(--bg-2)"}
-                  strokeWidth={isActive ? 2 : 1}
+                  stroke={
+                    isPinned
+                      ? "var(--fg-1)"
+                      : isActive
+                        ? "var(--brand-500)"
+                        : "var(--bg-2)"
+                  }
+                  strokeWidth={isPinned || isActive ? 2 : 1}
                 />
               </a>
+              {isPinned && !reducedMotion && (
+                <circle
+                  r={r + 2}
+                  fill="none"
+                  stroke="var(--brand-500)"
+                  strokeWidth={2}
+                  pointerEvents="none"
+                >
+                  <animate
+                    attributeName="r"
+                    from={r + 2}
+                    to={r * 2.6 + 4}
+                    dur="1.6s"
+                    repeatCount="indefinite"
+                  />
+                  <animate
+                    attributeName="opacity"
+                    from={0.85}
+                    to={0}
+                    dur="1.6s"
+                    repeatCount="indefinite"
+                  />
+                </circle>
+              )}
             </g>
           );
         })}
       </svg>
+      {cardTargetId && (
+        <MiniPreviewCard
+          ref={cardRef}
+          node={rawNodesById.get(cardTargetId)!}
+          pinned={pinnedId === cardTargetId}
+          onClose={() => setPinnedId(null)}
+        />
+      )}
     </div>
   );
 }
+
+const MiniPreviewCard = forwardRef<
+  HTMLDivElement,
+  { node: InputNode; pinned: boolean; onClose: () => void }
+>(function MiniPreviewCard({ node, pinned, onClose }, ref) {
+  const date = node.createdAt
+    ? new Date(node.createdAt).toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      })
+    : null;
+  return (
+    <div
+      ref={ref}
+      className={`absolute top-0 left-0 z-10 w-60 rounded-md border bg-bg-1 p-3 ${
+        pinned
+          ? "cursor-pointer border-fg-1 shadow-xl"
+          : "pointer-events-none border-border shadow-lg"
+      }`}
+      style={{ willChange: "transform" }}
+      role={pinned ? undefined : "tooltip"}
+      onClick={
+        pinned
+          ? () => {
+              window.location.href = node.href;
+            }
+          : undefined
+      }
+    >
+      {pinned && (
+        <button
+          type="button"
+          aria-label="dismiss preview"
+          onClick={(e) => {
+            e.stopPropagation();
+            onClose();
+          }}
+          className="absolute top-1.5 right-1.5 grid h-5 w-5 place-items-center rounded-full text-fg-3 transition-colors hover:bg-bg-3 hover:text-fg-1"
+        >
+          <span aria-hidden="true" className="text-base leading-none">
+            ×
+          </span>
+        </button>
+      )}
+      <div className="mb-1.5 flex items-center gap-1.5 pr-5 font-mono text-[9px] uppercase tracking-[0.04em] text-fg-3">
+        {date && <time dateTime={node.createdAt}>{date}</time>}
+        {date && <span aria-hidden="true">·</span>}
+        <span>{node.readMinutes} min</span>
+        {node.primaryTag && (
+          <>
+            <span aria-hidden="true">·</span>
+            <span style={{ color: tagColor(node.primaryTag) }}>
+              #{node.primaryTag}
+            </span>
+          </>
+        )}
+      </div>
+      <p className="text-[13px] font-semibold leading-tight text-fg-1">
+        {node.title}
+      </p>
+      {node.description && (
+        <p className="mt-1.5 line-clamp-2 text-xs leading-snug text-fg-2">
+          {node.description}
+        </p>
+      )}
+      {pinned && (
+        <a
+          href={node.href}
+          onClick={(e) => e.stopPropagation()}
+          className="mt-2 -mx-1 block border-t border-dashed border-border px-1 pt-2 font-mono text-[11px] font-medium text-brand-600 transition-colors hover:text-brand-700"
+        >
+          open article →
+        </a>
+      )}
+    </div>
+  );
+});
