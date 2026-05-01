@@ -198,6 +198,8 @@ const backlinks = getBacklinks(allPosts, post.id);
 </BaseLayout>
 
 <script>
+  import { setupTocScrollSpy } from "@/lib/toc-scroll-spy";
+
   const links = Array.from(
     document.querySelectorAll<HTMLAnchorElement>("a[data-toc-link]"),
   );
@@ -213,6 +215,8 @@ const backlinks = getBacklinks(allPosts, post.id);
 
     const scrollRoot =
       document.querySelector<HTMLElement>("[data-scroll-root]");
+
+    setupTocScrollSpy({ headings, scrollRoot });
 
     // On desktop the [data-scroll-root] div scrolls; on mobile body-scroll,
     // scrollRoot has no scrollable height and we fall back to documentElement.
@@ -235,41 +239,6 @@ const backlinks = getBacklinks(allPosts, post.id);
       cachedScroller = document.documentElement;
       return cachedScroller;
     }
-
-    function setActive(slug: string | null) {
-      for (const { link } of headings) {
-        link.dataset.active = link.dataset.tocSlug === slug ? "true" : "false";
-      }
-    }
-
-    // The active heading is the last one whose top has scrolled past the
-    // reading line at y=TOP. We listen to scroll events on both the inner
-    // scroll root (desktop) and window (mobile body-scroll) and recompute
-    // on rAF to avoid layout thrash.
-    const TOP = 80;
-    let pending = false;
-    function update() {
-      pending = false;
-      let active: string | null = null;
-      for (const { el } of headings) {
-        if (el.getBoundingClientRect().top - TOP <= 0) {
-          active = el.id;
-        } else {
-          break;
-        }
-      }
-      setActive(active ?? headings[0]?.el.id ?? null);
-    }
-    function schedule() {
-      if (pending) return;
-      pending = true;
-      requestAnimationFrame(update);
-    }
-
-    scrollRoot?.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
-    update();
 
     const reducedMotion = window.matchMedia(
       "(prefers-reduced-motion: reduce)",
