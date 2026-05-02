@@ -24,6 +24,7 @@
     "es-toolkit": "^1.43.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
+    "sharp": "^0.34.5",
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
@@ -47,5 +48,10 @@
     "unified": "^11.0.5",
     "unist-util-visit": "^5.1.0",
     "vitest": "^4.0.16"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "sharp"
+    ]
   }
 }
