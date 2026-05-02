@@ -112,6 +112,7 @@ export default function PostGraph({
   const animRef = useRef<number | null>(null);
   const [hoveredId, setHoveredId] = useState<string | null>(null);
   const [pinnedId, setPinnedId] = useState<string | null>(null);
+  const [isPanning, setIsPanning] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
 
   useEffect(() => {
@@ -323,6 +324,7 @@ export default function PostGraph({
       pointerId: e.pointerId,
       moved: false,
     };
+    setIsPanning(true);
     (e.currentTarget as Element).setPointerCapture(e.pointerId);
   }
 
@@ -343,6 +345,7 @@ export default function PostGraph({
       animatePanTo(0, 0);
     }
     panDrag.current = null;
+    setIsPanning(false);
   }
 
   function onPointerUp(e: React.PointerEvent<SVGGElement>) {
@@ -421,7 +424,7 @@ export default function PostGraph({
           onPointerMove={onBgPointerMove}
           onPointerUp={onBgPointerUp}
           onPointerCancel={onBgPointerUp}
-          style={{ cursor: panDrag.current ? "grabbing" : "grab" }}
+          style={{ cursor: isPanning ? "grabbing" : "grab" }}
         />
         <g transform={`translate(${pan.x} ${pan.y})`}>
           <rect
