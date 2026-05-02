@@ -78,6 +78,18 @@ Tailwind v4 (`@tailwindcss/vite`) with the typography plugin. Global styles in `
 
 `components.json` is shadcn's manifest (`new-york` style, `slate` base, `cssVariables: true`). Aliases: `@/components`, `@/components/ui`, `@/lib`, `@/lib/utils`, `@/hooks`. Icons come from `@lucide/astro` (Astro components), not `lucide-react`.
 
+Canonical class-merge + tag-color usage:
+
+```tsx
+import { cn } from "@/lib/utils";
+import { tagColor } from "@/lib/tag-colors";
+
+<span
+  class={cn("rounded-full px-2 py-1 text-xs", isActive && "ring-2")}
+  style={{ color: tagColor(primaryTag) }}
+/>
+```
+
 ## Testing
 
 Vitest uses `astro/config` `getViteConfig` so Astro components can be rendered via the container API. Two non-default settings matter:
@@ -118,3 +130,11 @@ When a change pivots architecture (rendering posture, a new dependency category,
 - `Dockerfile` — multi-stage build, `pnpm build` then nginx serving `/dist`.
 - `.github/workflows/releaser.yml` — on push to `main` or `v*.*.*` tag, builds and deploys via `seheon99/build-and-deploy@v1`. PRs run with `dry-run: true`.
 - `.github/workflows/synchronizer.yml` — listens for `repository_dispatch` `content_updated` from the vault repo, updates the submodule, validates the build, and fast-forwards `main`.
+
+## Boundaries
+
+- **Don't author or commit post markdown from this repo.** `src/content/posts/` is owned by the `blog-obsidian-vault` submodule; the `synchronizer.yml` workflow is the only writer. New fixtures for tests go under `tests/fixtures/posts/`, not into the submodule.
+- **Don't push to `automation/content-sync`.** That branch is force-pushed by the synchronizer workflow on every vault update.
+- **Don't relax `pnpm.onlyBuiltDependencies`.** Postinstall scripts are blocked by design; only `sharp` is whitelisted. Adding a dep that requires postinstall needs an explicit decision.
+- **Don't enable `fileParallelism` in vitest.** Tests share `.astro/data-store.json`; parallel files race the seeder in `tests/global-setup.ts`.
+- **Don't add a React island without an ADR.** ADR-002's bar (lifecycle, imperative DOM, per-element handlers, cross-page reuse) must be cleared and recorded.
