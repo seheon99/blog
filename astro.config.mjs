@@ -3,6 +3,8 @@ import tailwindcss from "@tailwindcss/vite";
 import react from "@astrojs/react";
 import { remarkAlert } from "remark-github-blockquote-alert";
 
+import remarkObsidianEmbed from "./src/lib/remark-obsidian-embed.ts";
+
 export default defineConfig({
   site: "https://blog.seheon.kr",
   base: "/",
@@ -14,6 +16,6 @@ export default defineConfig({
   },
   integrations: [react()],
   markdown: {
-    remarkPlugins: [remarkAlert],
+    remarkPlugins: [remarkObsidianEmbed, remarkAlert],
   },
 });
