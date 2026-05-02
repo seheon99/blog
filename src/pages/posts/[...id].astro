@@ -192,10 +192,13 @@ const backlinks = getBacklinks(allPosts, post.id);
 </BaseLayout>
 
 <script>
+  import { renderMermaidDiagrams } from "@/lib/mermaid-render";
   import {
     setupTocScrollSpy,
     TOC_TOP_OFFSET,
   } from "@/lib/toc-scroll-spy";
+
+  renderMermaidDiagrams();
 
   const links = Array.from(
     document.querySelectorAll<HTMLAnchorElement>("a[data-toc-link]"),
