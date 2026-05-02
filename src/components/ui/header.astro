@@ -5,11 +5,9 @@ import { normalizePath } from "@/lib/utils";
 
 const path = normalizePath(Astro.url.pathname);
 const isHome = path === "/";
-const view = isHome
-  ? Astro.url.searchParams.get("view") === "graph"
-    ? "graph"
-    : "list"
-  : null;
+const homeView =
+  Astro.url.searchParams.get("view") === "graph" ? "graph" : "list";
+const view = isHome ? homeView : null;
 
 const navLinkBase = "text-sm transition-colors";
 const navLinkActive = "font-medium text-fg-1";
