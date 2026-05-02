@@ -20,7 +20,7 @@ function nodeMatchesTag(n: GraphNode, tag: string | null): boolean {
   return n.tags.includes(tag);
 }
 
-type SimNode = GraphNode & SimulationNodeDatum & { degree: number };
+type SimNode = GraphNode & SimulationNodeDatum;
 
 type SimLink = SimulationLinkDatum<SimNode>;
 
@@ -182,15 +182,6 @@ export default function PostGraph({
 
   useEffect(() => () => cancelPanAnim(), []);
 
-  const degreeById = useMemo(() => {
-    const map = new Map<string, number>();
-    for (const link of rawLinks) {
-      map.set(link.source, (map.get(link.source) ?? 0) + 1);
-      map.set(link.target, (map.get(link.target) ?? 0) + 1);
-    }
-    return map;
-  }, [rawLinks]);
-
   const pinnedNeighbors = useMemo(() => {
     const set = new Set<string>();
     if (!pinnedId) return set;
@@ -216,10 +207,7 @@ export default function PostGraph({
   }, []);
 
   useEffect(() => {
-    const nodes: SimNode[] = rawNodes.map((n) => ({
-      ...n,
-      degree: degreeById.get(n.id) ?? 0,
-    }));
+    const nodes: SimNode[] = rawNodes.map((n) => ({ ...n }));
     const links: SimLink[] = rawLinks.map((l) => ({ ...l }));
 
     simNodesRef.current = nodes;
@@ -287,7 +275,7 @@ export default function PostGraph({
       sim.on("tick", null);
       simRef.current = null;
     };
-  }, [rawNodes, rawLinks, degreeById, size.width, size.height]);
+  }, [rawNodes, rawLinks, size.width, size.height]);
 
   function clientToSvg(x: number, y: number): { x: number; y: number } | null {
     const svg = svgRef.current;
