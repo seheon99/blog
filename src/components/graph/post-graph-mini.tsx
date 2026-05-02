@@ -2,6 +2,7 @@ import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
 import { tagColor } from "@/lib/tag-colors";
 import { runTick } from "@/lib/post-graph-tick";
 import { formatPostDate } from "@/lib/format-date";
+import type { GraphLink, GraphNode } from "@/lib/post-graph";
 import {
   forceCollide,
   forceLink,
@@ -14,29 +15,13 @@ import {
   type SimulationNodeDatum,
 } from "d3-force";
 
-interface InputNode {
-  id: string;
-  href: string;
-  title: string;
-  readMinutes: number;
-  primaryTag?: string;
-  description?: string;
-  createdAt?: string;
-  tags?: string[];
-}
-
-interface InputLink {
-  source: string;
-  target: string;
-}
-
 type SimNode = SimulationNodeDatum & { id: string; readMinutes: number };
 
 type SimLink = SimulationLinkDatum<SimNode> & { key: string };
 
 interface Props {
-  nodes: InputNode[];
-  links: InputLink[];
+  nodes: GraphNode[];
+  links: GraphLink[];
   activeId: string;
 }
 
@@ -389,7 +374,7 @@ export default function PostGraphMini({
 
 const MiniPreviewCard = forwardRef<
   HTMLDivElement,
-  { node: InputNode; pinned: boolean; onClose: () => void }
+  { node: GraphNode; pinned: boolean; onClose: () => void }
 >(function MiniPreviewCard({ node, pinned, onClose }, ref) {
   const date = formatPostDate(node.createdAt);
   return (

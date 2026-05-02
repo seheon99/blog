@@ -1,6 +1,7 @@
 import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
 import { tagColor } from "@/lib/tag-colors";
 import { formatPostDate } from "@/lib/format-date";
+import type { GraphLink, GraphNode } from "@/lib/post-graph";
 import {
   forceCenter,
   forceCollide,
@@ -14,44 +15,18 @@ import {
   type SimulationNodeDatum,
 } from "d3-force";
 
-interface InputNode {
-  id: string;
-  href: string;
-  title: string;
-  description: string;
-  createdAt: string;
-  tags: string[];
-  primaryTag?: string;
-  readMinutes: number;
-}
-
-function nodeMatchesTag(n: InputNode, tag: string | null): boolean {
+function nodeMatchesTag(n: GraphNode, tag: string | null): boolean {
   if (!tag) return true;
   return n.tags.includes(tag);
 }
 
-interface InputLink {
-  source: string;
-  target: string;
-}
-
-interface SimNode extends SimulationNodeDatum {
-  id: string;
-  href: string;
-  title: string;
-  description: string;
-  createdAt: string;
-  tags: string[];
-  primaryTag?: string;
-  readMinutes: number;
-  degree: number;
-}
+type SimNode = GraphNode & SimulationNodeDatum & { degree: number };
 
 type SimLink = SimulationLinkDatum<SimNode>;
 
 interface Props {
-  nodes: InputNode[];
-  links: InputLink[];
+  nodes: GraphNode[];
+  links: GraphLink[];
   activeTag?: string | null;
 }
 
@@ -63,10 +38,10 @@ function radiusFor(readMinutes: number): number {
   return NODE_RADIUS_BASE + readMinutes * NODE_RADIUS_PER_MINUTE;
 }
 
-function makeFakeLinks(nodes: InputNode[], count: number): InputLink[] {
+function makeFakeLinks(nodes: GraphNode[], count: number): GraphLink[] {
   if (nodes.length < 2) return [];
   const seen = new Set<string>();
-  const out: InputLink[] = [];
+  const out: GraphLink[] = [];
   let attempts = 0;
   const maxAttempts = count * 20;
   while (out.length < count && attempts < maxAttempts) {
@@ -598,7 +573,7 @@ export default function PostGraph({
 
 const PreviewCard = forwardRef<
   HTMLDivElement,
-  { node: InputNode; pinned: boolean; onClose: () => void }
+  { node: GraphNode; pinned: boolean; onClose: () => void }
 >(function PreviewCard({ node, pinned, onClose }, ref) {
   const date = formatPostDate(node.createdAt);
   return (
