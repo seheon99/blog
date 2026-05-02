@@ -15,7 +15,7 @@ const activeTag = Astro.url.searchParams.get("tag");
 const allPosts = await getCollection("posts");
 const graph = buildPostGraph(allPosts);
 
-const sorted = allPosts.sort(
+const sorted = [...allPosts].sort(
   (a, b) => b.data.createdAt.getTime() - a.data.createdAt.getTime(),
 );
 

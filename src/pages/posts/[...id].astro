@@ -14,7 +14,7 @@ import PostGraphMini from "@/components/graph/post-graph-mini";
 
 export async function getStaticPaths() {
   const posts = await getCollection("posts");
-  const sortedPosts = posts.sort(
+  const sortedPosts = [...posts].sort(
     (a, b) => b.data.createdAt.getTime() - a.data.createdAt.getTime(),
   );
 
