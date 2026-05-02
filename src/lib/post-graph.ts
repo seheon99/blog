@@ -33,6 +33,11 @@ export interface PostGraph {
   links: GraphLink[];
 }
 
+interface ResolvedRef {
+  fromId: string;
+  toId: string;
+}
+
 function toNode(post: PostGraphInput): GraphNode {
   return {
     id: post.id,
@@ -62,6 +67,30 @@ function buildLookups(nodes: GraphNode[]): {
   return { idSet, titleMap };
 }
 
+function* iterateRefs(
+  posts: PostGraphInput[],
+  idSet: Set<string>,
+  titleMap: Map<string, string[]>,
+  options: { warnUnresolved: boolean },
+): Generator<ResolvedRef> {
+  for (const post of posts) {
+    const body = post.body ?? "";
+    if (!body) continue;
+    for (const ref of parseWikilinks(body)) {
+      const resolved = resolveTarget(ref.target, idSet, titleMap);
+      if (!resolved) {
+        if (options.warnUnresolved) {
+          console.warn(
+            `[buildPostGraph] unresolved wikilink in ${post.id}: [[${ref.target}]]`,
+          );
+        }
+        continue;
+      }
+      yield { fromId: post.id, toId: resolved };
+    }
+  }
+}
+
 export function buildPostGraph(posts: PostGraphInput[]): PostGraph {
   const nodes = posts.map(toNode);
   const { idSet, titleMap } = buildLookups(nodes);
@@ -69,25 +98,15 @@ export function buildPostGraph(posts: PostGraphInput[]): PostGraph {
   const seen = new Set<string>();
   const links: GraphLink[] = [];
 
-  for (const post of posts) {
-    const body = post.body ?? "";
-    if (!body) continue;
-    for (const ref of parseWikilinks(body)) {
-      const resolved = resolveTarget(ref.target, idSet, titleMap);
-      if (!resolved) {
-        console.warn(
-          `[buildPostGraph] unresolved wikilink in ${post.id}: [[${ref.target}]]`,
-        );
-        continue;
-      }
-      if (resolved === post.id) continue;
-
-      const [a, b] = [post.id, resolved].sort();
-      const key = `${a}|${b}`;
-      if (seen.has(key)) continue;
-      seen.add(key);
-      links.push({ source: a, target: b });
-    }
+  for (const { fromId, toId } of iterateRefs(posts, idSet, titleMap, {
+    warnUnresolved: true,
+  })) {
+    if (fromId === toId) continue;
+    const [a, b] = [fromId, toId].sort();
+    const key = `${a}|${b}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    links.push({ source: a, target: b });
   }
 
   return { nodes, links };
@@ -99,19 +118,19 @@ export function getBacklinks(
 ): GraphNode[] {
   const nodes = posts.map(toNode);
   const { idSet, titleMap } = buildLookups(nodes);
+  const nodesById = new Map(nodes.map((n) => [n.id, n]));
 
+  const seen = new Set<string>();
   const result: GraphNode[] = [];
-  for (const post of posts) {
-    if (post.id === targetId) continue;
-    const body = post.body ?? "";
-    if (!body) continue;
-    for (const ref of parseWikilinks(body)) {
-      const resolved = resolveTarget(ref.target, idSet, titleMap);
-      if (resolved === targetId) {
-        result.push(toNode(post));
-        break;
-      }
-    }
+  for (const { fromId, toId } of iterateRefs(posts, idSet, titleMap, {
+    warnUnresolved: false,
+  })) {
+    if (toId !== targetId) continue;
+    if (fromId === targetId) continue;
+    if (seen.has(fromId)) continue;
+    seen.add(fromId);
+    const node = nodesById.get(fromId);
+    if (node) result.push(node);
   }
   return result;
 }

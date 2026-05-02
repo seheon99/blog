@@ -1,4 +1,4 @@
-const KOREAN_RANGE = /[가-힯]/g;
+const KOREAN_RANGE = /[가-힣]/g;
 const CODE_FENCE = /```[\s\S]*?```/g;
 const KOREAN_CPM = 500;
 const ENGLISH_WPM = 250;
