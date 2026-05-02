@@ -20,6 +20,7 @@ The blog is designed to be fast, SEO-friendly, and easy to maintain over the lon
 - Blog content is written in **Markdown** and stored in [blog-obsidian-vault](https://github.com/seheon99/blog-obsidian-vault)
 - During build time, Astro fetches Markdown content and generates static pages
 - Interactive features (like force-directed graphs) are implemented as **React Islands**
+- Posts can embed **Mermaid** diagrams via fenced ```` ```mermaid ```` blocks; the runtime is lazy-loaded only on pages that contain a diagram
 
 This keeps the site lightweight while still supporting rich visualizations.
 
