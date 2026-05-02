@@ -4,6 +4,7 @@ import react from "@astrojs/react";
 import { remarkAlert } from "remark-github-blockquote-alert";
 
 import remarkObsidianEmbed from "./src/lib/remark-obsidian-embed.ts";
+import remarkMermaid from "./src/lib/remark-mermaid.ts";
 
 export default defineConfig({
   site: "https://blog.seheon.kr",
@@ -16,6 +17,6 @@ export default defineConfig({
   },
   integrations: [react()],
   markdown: {
-    remarkPlugins: [remarkObsidianEmbed, remarkAlert],
+    remarkPlugins: [remarkObsidianEmbed, remarkAlert, remarkMermaid],
   },
 });

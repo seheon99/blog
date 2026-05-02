@@ -187,6 +187,61 @@ describe("Post detail — table of contents", () => {
   });
 });
 
+describe("Post detail — mermaid blocks", () => {
+  let mermaidHtml: string;
+
+  beforeAll(async () => {
+    const posts = await getCollection("posts");
+    const sorted = posts.sort(
+      (a, b) => b.data.createdAt.getTime() - a.data.createdAt.getTime(),
+    );
+    const withMermaid = sorted.find((p) =>
+      /^```mermaid/m.test(p.body ?? ""),
+    );
+    if (!withMermaid) throw new Error("no test post contains a mermaid block");
+
+    const idx = sorted.findIndex((p) => p.id === withMermaid.id);
+    const prev = sorted[idx + 1] ?? null;
+    const next = sorted[idx - 1] ?? null;
+
+    const container = await AstroContainer.create();
+    container.addServerRenderer({
+      name: "@astrojs/react",
+      renderer: (await import("@astrojs/react/server.js")).default,
+    });
+    container.addClientRenderer({
+      name: "@astrojs/react",
+      entrypoint: "@astrojs/react/client.js",
+    });
+    mermaidHtml = await container.renderToString(PostDetailPage, {
+      props: { post: withMermaid, prevPost: prev, nextPost: next },
+    });
+  });
+
+  it("emits a <pre class=\"mermaid\"> block for ```mermaid fences", () => {
+    expect(mermaidHtml).toMatch(/<pre class="mermaid"[^>]*data-mermaid-source/);
+  });
+
+  it("preserves the diagram source inside the mermaid pre", () => {
+    const mermaidPre = mermaidHtml.match(
+      /<pre class="mermaid"[^>]*>([\s\S]*?)<\/pre>/,
+    )?.[1];
+    expect(mermaidPre).toBeTruthy();
+    expect(mermaidPre).toContain("flowchart LR");
+    expect(mermaidPre).toContain("A --> B");
+  });
+
+  it("does not emit a syntax-highlighted code block for the mermaid fence", () => {
+    // If Shiki had highlighted the block we'd see an `astro-code` pre wrapping
+    // the diagram source instead of `<pre class="mermaid">`.
+    const mermaidPre = mermaidHtml.match(
+      /<pre class="mermaid"[^>]*>[\s\S]*?<\/pre>/,
+    )?.[0];
+    expect(mermaidPre).toBeTruthy();
+    expect(mermaidPre).not.toContain("astro-code");
+  });
+});
+
 describe("Post detail — backlinks", () => {
   it("renders the backlinks section with an empty-state hint when no other posts reference this one", () => {
     const rail = marginRailFragment(html);
