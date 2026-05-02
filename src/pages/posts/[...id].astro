@@ -18,20 +18,14 @@ export async function getStaticPaths() {
     (a, b) => b.data.createdAt.getTime() - a.data.createdAt.getTime(),
   );
 
-  return sortedPosts.map((post) => {
-    const currentIndex = sortedPosts.findIndex((p) => p.id === post.id);
-    const prevPost =
-      currentIndex + 1 < sortedPosts.length
-        ? sortedPosts[currentIndex + 1]
-        : null;
-    const nextPost =
-      currentIndex - 1 >= 0 ? sortedPosts[currentIndex - 1] : null;
-
-    return {
-      params: { id: post.id },
-      props: { post, prevPost, nextPost },
-    };
-  });
+  return sortedPosts.map((post, i) => ({
+    params: { id: post.id },
+    props: {
+      post,
+      prevPost: sortedPosts[i + 1] ?? null,
+      nextPost: sortedPosts[i - 1] ?? null,
+    },
+  }));
 }
 
 interface Props {
