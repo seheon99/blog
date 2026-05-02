@@ -13,5 +13,6 @@ export default getViteConfig({
   // astro's getViteConfig type doesn't surface the test field.
   test: {
     fileParallelism: false,
+    globalSetup: ["./tests/global-setup.ts"],
   },
 });
