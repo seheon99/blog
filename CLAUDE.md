@@ -51,9 +51,10 @@ Both islands mount via `client:only="react"` (no SSR) — the graph is meaningle
 
 Posts are Markdown in the `src/content/posts` submodule. The content collection (`src/content/config.ts`) accepts either `tags` or `topics` in frontmatter and normalizes to `tags` via `.transform()` — Obsidian historically used `topics`. `tags[0]` is the **primary tag** by convention (drives the pill color, list eyebrow, graph node color).
 
-Two custom remark plugins run at build time (wired in `astro.config.mjs`):
+Three custom remark plugins run at build time (wired in `astro.config.mjs`):
 
 - `src/lib/remark-obsidian-embed.ts` — converts Obsidian image embeds (`![[file.png|alt|320x240]]`) into mdast `image` nodes pointing at `src/content/posts/_resources/`. Non-image embeds are left as text.
+- `src/lib/remark-obsidian-wikilink.ts` — converts Obsidian `[[wikilink]]` references (with optional `|alias` and `#heading`) into `<a class="wikilink" href="/posts/{id}">` nodes. Resolves by post id first, then by case-insensitive frontmatter title; unresolved targets are left as raw `[[text]]` with a `console.warn`. Mirrors `buildPostGraph`'s exclusions: `![[…]]` embeds and content inside fenced/inline code do not become links. See [ADR-005](docs/decisions/ADR-005-wikilink-edges-obsidian-workflow.md).
 - `remark-github-blockquote-alert` — GitHub-flavored alert blockquotes ([ADR-001](docs/decisions/ADR-001-github-flavored-markdown-alerts.md)).
 
 ### Post graph (build-time derived)
