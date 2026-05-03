@@ -42,6 +42,7 @@ Update this file whenever a phase ships, splits, or changes scope.
 - [ADR-003](decisions/ADR-003-graph-view-react-island.md) — graph view re-introduces a React island; ADR-002's load-bearing-reason bar is met (simulation lifecycle, ResizeObserver, drag handlers, future reuse in phases 6–7).
 - [ADR-004](decisions/ADR-004-d3-force-graph-rendering.md) — `d3-force` + hand-rolled SVG over `react-force-graph` / `cytoscape` / `sigma`.
 - [ADR-005](decisions/ADR-005-wikilink-edges-obsidian-workflow.md) — graph edges come from `[[wikilinks]]` so the published graph mirrors the Obsidian vault graph.
+- [ADR-006](decisions/ADR-006-katex-math-rendering.md) — dollar-delimited math (`$…$`, `$$…$$`) renders via `remark-math` + `rehype-katex` at build time.
 
 ## Update protocol
 
