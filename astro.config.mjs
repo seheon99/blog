@@ -4,6 +4,7 @@ import react from "@astrojs/react";
 import { remarkAlert } from "remark-github-blockquote-alert";
 
 import remarkObsidianEmbed from "./src/lib/remark-obsidian-embed.ts";
+import remarkObsidianWikilink from "./src/lib/remark-obsidian-wikilink.ts";
 import remarkMermaid from "./src/lib/remark-mermaid.ts";
 
 export default defineConfig({
@@ -17,6 +18,11 @@ export default defineConfig({
   },
   integrations: [react()],
   markdown: {
-    remarkPlugins: [remarkObsidianEmbed, remarkAlert, remarkMermaid],
+    remarkPlugins: [
+      remarkObsidianEmbed,
+      remarkObsidianWikilink,
+      remarkAlert,
+      remarkMermaid,
+    ],
   },
 });

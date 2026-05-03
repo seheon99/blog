@@ -95,12 +95,22 @@ the latter.
   hydrates. No runtime markdown parsing in the browser.
 - The parser is regex-based, not AST-based. This is appropriate for
   the scope: we need to identify wikilink references, not transform
-  the markdown. A future remark plugin could promote the same
-  wikilinks to inline prose links, unifying the author experience
-  further — that is a separate concern and out of scope here.
+  the markdown.
 - Image embed exclusion (`![[file.ext]]`) is handled by a negative
   lookbehind in the regex. JS lookbehind is ES2018, supported
   everywhere this project runs.
+- Inline rendering of `[[wikilinks]]` in post bodies is handled by
+  [`src/lib/remark-obsidian-wikilink.ts`](../../src/lib/remark-obsidian-wikilink.ts),
+  a remark plugin wired into `astro.config.mjs`. It reuses the same
+  resolution rules (id first, then case-insensitive title) and the
+  same image-embed exclusion. Resolved targets become `<a
+  href="/posts/{id}" class="wikilink">` nodes in the rendered HTML,
+  with optional `#heading` slugs and `[[target|alias]]` text. The
+  posts index is built from the filesystem on first invocation and
+  cached for the rest of the build, since the Astro content
+  collection is not yet available inside a remark plugin. Unresolved
+  targets are left as raw `[[text]]` and warned, mirroring
+  `buildPostGraph`'s posture.
 
 ## Consequences
 
@@ -108,8 +118,9 @@ Positive:
 
 - The blog graph reflects author intent, not statistical inference.
 - Authoring stays in Obsidian; no new "edit graph" workflow.
-- A future remark plugin can reuse the same parser to render
-  wikilinks as inline prose links, completing the round-trip.
+- The same `[[wikilink]]` syntax that drives graph edges also
+  renders as inline prose links via `remark-obsidian-wikilink`,
+  completing the round-trip from Obsidian to the published page.
 
 Trade-offs:
 
