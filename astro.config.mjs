@@ -2,6 +2,8 @@ import { defineConfig } from "astro/config";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@astrojs/react";
 import { remarkAlert } from "remark-github-blockquote-alert";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 
 import remarkObsidianEmbed from "./src/lib/remark-obsidian-embed.ts";
 import remarkMermaid from "./src/lib/remark-mermaid.ts";
@@ -17,6 +19,7 @@ export default defineConfig({
   },
   integrations: [react()],
   markdown: {
-    remarkPlugins: [remarkObsidianEmbed, remarkAlert, remarkMermaid],
+    remarkPlugins: [remarkObsidianEmbed, remarkAlert, remarkMermaid, remarkMath],
+    rehypePlugins: [rehypeKatex],
   },
 });
