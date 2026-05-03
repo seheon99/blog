@@ -125,11 +125,13 @@ export function getBacklinks(
   for (const { fromId, toId } of iterateRefs(posts, idSet, titleMap, {
     warnUnresolved: false,
   })) {
-    if (toId !== targetId) continue;
-    if (fromId === targetId) continue;
-    if (seen.has(fromId)) continue;
-    seen.add(fromId);
-    const node = nodesById.get(fromId);
+    const otherId =
+      fromId === targetId ? toId : toId === targetId ? fromId : null;
+    if (otherId === null) continue;
+    if (otherId === targetId) continue;
+    if (seen.has(otherId)) continue;
+    seen.add(otherId);
+    const node = nodesById.get(otherId);
     if (node) result.push(node);
   }
   return result;

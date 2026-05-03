@@ -150,13 +150,25 @@ describe("getBacklinks", () => {
     expect(result.map((n) => n.id)).toEqual(["a"]);
   });
 
-  it("only includes incoming references (the target's outgoing refs do not count)", () => {
-    // a → b; we look up backlinks for a, only b would qualify if it linked back.
+  it("returns a post the target itself references (outgoing edges count too)", () => {
+    // a → b; backlinks for a should include b — wikilink edges are undirected,
+    // matching the graph view in `buildPostGraph`.
     const result = getBacklinks(
       [post("a", "Alpha", "see [[Beta]]"), post("b", "Beta")],
       "a",
     );
-    expect(result).toEqual([]);
+    expect(result.map((n) => n.id)).toEqual(["b"]);
+  });
+
+  it("dedupes when posts reference each other in both directions", () => {
+    const result = getBacklinks(
+      [
+        post("a", "Alpha", "see [[Beta]]"),
+        post("b", "Beta", "back to [[Alpha]]"),
+      ],
+      "a",
+    );
+    expect(result.map((n) => n.id)).toEqual(["b"]);
   });
 
   it("excludes the target post itself even if its body wikilinks to itself", () => {
