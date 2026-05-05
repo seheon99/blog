@@ -15,9 +15,18 @@ const activeTag = Astro.url.searchParams.get("tag");
 const allPosts = await getCollection("posts");
 const graph = buildPostGraph(allPosts);
 
-const sorted = [...allPosts].sort(
-  (a, b) => b.data.createdAt.getTime() - a.data.createdAt.getTime(),
-);
+const compareByCreatedAtDesc = (
+  a: (typeof allPosts)[number],
+  b: (typeof allPosts)[number],
+) => b.data.createdAt.getTime() - a.data.createdAt.getTime();
+
+const articles = allPosts
+  .filter((post) => post.data.type === "article")
+  .sort(compareByCreatedAtDesc);
+
+const wikis = allPosts
+  .filter((post) => post.data.type === "wiki")
+  .sort(compareByCreatedAtDesc);
 
 // Stable, alphabetical list of every tag in use.
 const tagSet = new Set<string>();
@@ -26,11 +35,11 @@ for (const p of allPosts) {
 }
 const allTags = [...tagSet].sort((a, b) => a.localeCompare(b));
 
-const filteredSorted = activeTag
-  ? sorted.filter((p) => p.data.tags?.includes(activeTag))
-  : sorted;
+const filterByTag = (post: (typeof allPosts)[number]) =>
+  !activeTag || post.data.tags?.includes(activeTag);
 
-const posts = filteredSorted.map((post) => ({
+const filteredArticles = articles.filter(filterByTag);
+const listPosts = filteredArticles.map((post) => ({
   href: `/posts/${post.id}`,
   title: post.data.title,
   description: post.data.description,
@@ -39,7 +48,7 @@ const posts = filteredSorted.map((post) => ({
   primaryTag: post.data.tags?.[0],
 }));
 
-const featured = sorted[0];
+const featured = articles[0] ?? wikis[0];
 ---
 
 <BaseLayout title="seheon blog" description="글 목록">
@@ -51,7 +60,7 @@ const featured = sorted[0];
         글
       </h1>
       <p class="mt-2 text-sm text-fg-3">
-        {posts.length}개의 글
+        {listPosts.length}개의 글
       </p>
       <div class="mt-6 mb-10">
         <TagChipsRow
@@ -61,7 +70,7 @@ const featured = sorted[0];
         />
       </div>
       <div class="flex flex-col">
-        {posts.map((post) => <WritingRow {...post} />)}
+        {listPosts.map((post) => <WritingRow {...post} />)}
       </div>
     </main>
   </section>

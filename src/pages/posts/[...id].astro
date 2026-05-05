@@ -44,6 +44,10 @@ const words = wordCount(body);
 const primaryTag = post.data.tags?.[0];
 
 const dateLabel = formatPostDate(post.data.createdAt)?.toUpperCase();
+const updatedDateLabel = post.data.updatedAt
+  ? formatPostDate(post.data.updatedAt)?.toUpperCase()
+  : null;
+const shouldShowUpdatedDate = post.data.type === "wiki" && !!post.data.updatedAt;
 
 const allPosts = await getCollection("posts");
 const graph = buildPostGraph(allPosts);
@@ -82,9 +86,17 @@ const backlinks = getBacklinks(allPosts, post.id);
           <div
             class="mt-6 font-mono text-[11px] uppercase tracking-[0.04em] text-fg-3"
           >
-            <time datetime={post.data.createdAt.toISOString()}>
-              {dateLabel}
-            </time>
+            {
+              shouldShowUpdatedDate ? (
+                <time datetime={post.data.updatedAt!.toISOString()}>
+                  UPDATED {updatedDateLabel}
+                </time>
+              ) : (
+                <time datetime={post.data.createdAt.toISOString()}>
+                  {dateLabel}
+                </time>
+              )
+            }
             <span class="px-1.5">·</span>
             <span>{minutes} MIN</span>
             <span class="px-1.5">·</span>
