@@ -11,7 +11,9 @@ const posts = defineCollection({
     .object({
       title: z.string(),
       description: z.string(),
+      type: z.enum(["wiki", "article"]).default("wiki"),
       createdAt: z.coerce.date(),
+      updatedAt: z.coerce.date().optional(),
       // Posts authored in Obsidian historically used `topics`; site code
       // standardizes on `tags`. Accept both, normalize via transform below.
       tags: z.array(z.string()).optional(),
