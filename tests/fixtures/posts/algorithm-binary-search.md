@@ -1,6 +1,7 @@
 ---
 title: "Binary search invariants"
 description: "Loop invariants that keep binary search correct on every iteration"
+type: article
 createdAt: 2023-11-04
 tags:
   - Algorithm

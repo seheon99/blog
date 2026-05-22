@@ -1,6 +1,7 @@
 ---
 title: "Web Platform streams"
 description: "ReadableStream and WritableStream on the modern web platform"
+type: article
 createdAt: 2024-01-20
 tags:
   - JavaScript

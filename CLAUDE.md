@@ -23,7 +23,7 @@ pnpm vitest run -t "resolves wikilink by title"
 pnpm vitest bench
 ```
 
-`pnpm install` only builds `sharp` from source; other postinstall scripts are blocked via `pnpm.onlyBuiltDependencies`.
+`pnpm install` only builds `sharp` from source; other postinstall scripts are blocked via `pnpm-workspace.yaml`.
 
 ## Repository layout
 
@@ -136,6 +136,6 @@ When a change pivots architecture (rendering posture, a new dependency category,
 
 - **Don't author or commit post markdown from this repo.** `src/content/posts/` is owned by the `blog-obsidian-vault` submodule; the `synchronizer.yml` workflow is the only writer. New fixtures for tests go under `tests/fixtures/posts/`, not into the submodule.
 - **Don't push to `automation/content-sync`.** That branch is force-pushed by the synchronizer workflow on every vault update.
-- **Don't relax `pnpm.onlyBuiltDependencies`.** Postinstall scripts are blocked by design; only `sharp` is whitelisted. Adding a dep that requires postinstall needs an explicit decision.
+- **Don't relax `pnpm-workspace.yaml` build approvals.** Postinstall scripts are blocked by design; only `sharp` is whitelisted. Adding a dep that requires postinstall needs an explicit decision.
 - **Don't enable `fileParallelism` in vitest.** Tests share `.astro/data-store.json`; parallel files race the seeder in `tests/global-setup.ts`.
 - **Don't add a React island without an ADR.** ADR-002's bar (lifecycle, imperative DOM, per-element handlers, cross-page reuse) must be cleared and recorded.

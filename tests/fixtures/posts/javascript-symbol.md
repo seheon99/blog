@@ -1,6 +1,7 @@
 ---
 title: "JavaScript Symbol"
 description: "Notes on the Symbol primitive in JavaScript"
+type: article
 createdAt: 2024-03-15
 tags:
   - JavaScript
