@@ -6,6 +6,7 @@ import TagChipsRow from "@/components/ui/tag-chips-row.astro";
 import FeaturedPanel from "@/components/post/featured-panel.astro";
 import { readMinutes } from "@/lib/read-time";
 import { buildPostGraph } from "@/lib/post-graph";
+import { isListedWriting, isNotePost } from "@/lib/post-type";
 import { getCollection } from "astro:content";
 
 const initialView =
@@ -20,12 +21,12 @@ const compareByCreatedAtDesc = (
   b: (typeof allPosts)[number],
 ) => b.data.createdAt.getTime() - a.data.createdAt.getTime();
 
-const articles = allPosts
-  .filter((post) => post.data.type === "article")
+const writing = allPosts
+  .filter((post) => isListedWriting(post.data.type))
   .sort(compareByCreatedAtDesc);
 
-const wikis = allPosts
-  .filter((post) => post.data.type === "wiki")
+const notes = allPosts
+  .filter((post) => isNotePost(post.data.type))
   .sort(compareByCreatedAtDesc);
 
 // Stable, alphabetical list of every tag in use.
@@ -38,8 +39,8 @@ const allTags = [...tagSet].sort((a, b) => a.localeCompare(b));
 const filterByTag = (post: (typeof allPosts)[number]) =>
   !activeTag || post.data.tags?.includes(activeTag);
 
-const filteredArticles = articles.filter(filterByTag);
-const listPosts = filteredArticles.map((post) => ({
+const filteredWriting = writing.filter(filterByTag);
+const listPosts = filteredWriting.map((post) => ({
   href: `/posts/${post.id}`,
   title: post.data.title,
   description: post.data.description,
@@ -48,7 +49,7 @@ const listPosts = filteredArticles.map((post) => ({
   primaryTag: post.data.tags?.[0],
 }));
 
-const featured = articles[0] ?? wikis[0];
+const featured = writing[0] ?? notes[0];
 ---
 
 <BaseLayout title="seheon blog" description="글 목록">

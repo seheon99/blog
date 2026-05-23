@@ -7,6 +7,7 @@ import { proseClasses } from "@/lib/prose";
 import { readMinutes, wordCount } from "@/lib/read-time";
 import { buildPostGraph, getBacklinks } from "@/lib/post-graph";
 import { formatPostDate } from "@/lib/format-date";
+import { isNotePost } from "@/lib/post-type";
 import ReadingProgress from "@/components/post/reading-progress.astro";
 import TagPill from "@/components/post/tag-pill.astro";
 import PostFootNav from "@/components/post/post-foot-nav.astro";
@@ -47,7 +48,7 @@ const dateLabel = formatPostDate(post.data.createdAt)?.toUpperCase();
 const updatedDateLabel = post.data.updatedAt
   ? formatPostDate(post.data.updatedAt)?.toUpperCase()
   : null;
-const shouldShowUpdatedDate = post.data.type === "wiki" && !!post.data.updatedAt;
+const shouldShowUpdatedDate = isNotePost(post.data.type) && !!post.data.updatedAt;
 
 const allPosts = await getCollection("posts");
 const graph = buildPostGraph(allPosts);
