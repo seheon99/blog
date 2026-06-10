@@ -10,7 +10,7 @@ import { isListedWriting, isNotePost } from "@/lib/post-type";
 import { getCollection } from "astro:content";
 
 const initialView =
-  Astro.url.searchParams.get("view") === "graph" ? "graph" : "list";
+  Astro.url.searchParams.get("view") === "list" ? "list" : "graph";
 const activeTag = Astro.url.searchParams.get("tag");
 
 const allPosts = await getCollection("posts");
@@ -108,9 +108,9 @@ const featured = writing[0] ?? notes[0];
 
 <script>
   function readViewFromURL() {
-    return new URLSearchParams(location.search).get("view") === "graph"
-      ? "graph"
-      : "list";
+    return new URLSearchParams(location.search).get("view") === "list"
+      ? "list"
+      : "graph";
   }
 
   function applyView(view: string) {
