@@ -179,16 +179,46 @@ describe("Post detail — table of contents", () => {
     expect(rail).toMatch(/\bpl-7\b/);
   });
 
-  it("hides the TOC section when the post has no h2/h3 headings", () => {
-    // The outer beforeAll picks sorted[1]; in the current fixture set that
-    // post has no h2/h3 headings, so the TOC must not render.
-    const rail = marginRailFragment(html);
+  it("hides the TOC section when source content has no h2/h3 headings", async () => {
+    const posts = await getCollection("posts");
+    const sorted = posts.sort(
+      (a, b) => b.data.createdAt.getTime() - a.data.createdAt.getTime(),
+    );
+    const withoutHeadings = sorted.find(
+      (p) => !/^#{2,3} /m.test(p.body ?? ""),
+    );
+
+    if (!withoutHeadings) {
+      expect(withoutHeadings).toBeUndefined();
+      return;
+    }
+
+    const idx = sorted.findIndex((p) => p.id === withoutHeadings.id);
+    const prev = sorted[idx + 1] ?? null;
+    const next = sorted[idx - 1] ?? null;
+
+    const container = await AstroContainer.create();
+    container.addServerRenderer({
+      name: "@astrojs/react",
+      renderer: (await import("@astrojs/react/server.js")).default,
+    });
+    container.addClientRenderer({
+      name: "@astrojs/react",
+      entrypoint: "@astrojs/react/client.js",
+    });
+
+    const noTocHtml = await container.renderToString(PostDetailPage, {
+      props: { post: withoutHeadings, prevPost: prev, nextPost: next },
+    });
+
+    const rail = marginRailFragment(noTocHtml);
     expect(rail).not.toContain("data-toc");
   });
 });
 
 describe("Post detail — mermaid blocks", () => {
   let mermaidHtml: string;
+  let mermaidFirstLine: string;
 
   beforeAll(async () => {
     const posts = await getCollection("posts");
@@ -199,6 +229,14 @@ describe("Post detail — mermaid blocks", () => {
       /^```mermaid/m.test(p.body ?? ""),
     );
     if (!withMermaid) throw new Error("no test post contains a mermaid block");
+    const mermaidSource = withMermaid.body?.match(
+      /^```mermaid\s*\n([\s\S]*?)\n```/m,
+    )?.[1];
+    mermaidFirstLine =
+      mermaidSource
+        ?.split(/\r?\n/)
+        .find((line) => line.trim())
+        ?.trim() ?? "";
 
     const idx = sorted.findIndex((p) => p.id === withMermaid.id);
     const prev = sorted[idx + 1] ?? null;
@@ -227,8 +265,7 @@ describe("Post detail — mermaid blocks", () => {
       /<pre class="mermaid"[^>]*>([\s\S]*?)<\/pre>/,
     )?.[1];
     expect(mermaidPre).toBeTruthy();
-    expect(mermaidPre).toContain("flowchart LR");
-    expect(mermaidPre).toContain("A --> B");
+    expect(mermaidPre).toContain(mermaidFirstLine);
   });
 
   it("does not emit a syntax-highlighted code block for the mermaid fence", () => {

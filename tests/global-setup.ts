@@ -2,8 +2,11 @@ import { execFileSync } from "node:child_process";
 import {
   copyFileSync,
   existsSync,
+  mkdirSync,
+  readFileSync,
   readdirSync,
   unlinkSync,
+  writeFileSync,
 } from "node:fs";
 import path from "node:path";
 
@@ -29,6 +32,8 @@ function listMarkdown(dir: string): string[] {
 export default function setup() {
   const seeded: string[] = [];
   let copiedStore = false;
+  let hadRuntimeStore = false;
+  let previousRuntimeStore: Buffer | null = null;
 
   if (listMarkdown(POSTS_DIR).length === 0) {
     for (const file of listMarkdown(FIXTURES_DIR)) {
@@ -38,9 +43,12 @@ export default function setup() {
     }
   }
 
-  if (seeded.length > 0) {
+  if (listMarkdown(POSTS_DIR).length > 0) {
     execFileSync("npx", ["astro", "sync"], { cwd: REPO_ROOT, stdio: "inherit" });
     if (existsSync(SYNC_OUTPUT)) {
+      hadRuntimeStore = existsSync(RUNTIME_STORE);
+      previousRuntimeStore = hadRuntimeStore ? readFileSync(RUNTIME_STORE) : null;
+      mkdirSync(path.dirname(RUNTIME_STORE), { recursive: true });
       copyFileSync(SYNC_OUTPUT, RUNTIME_STORE);
       copiedStore = true;
     }
@@ -56,7 +64,11 @@ export default function setup() {
     }
     if (copiedStore) {
       try {
-        unlinkSync(RUNTIME_STORE);
+        if (hadRuntimeStore && previousRuntimeStore) {
+          writeFileSync(RUNTIME_STORE, previousRuntimeStore);
+        } else {
+          unlinkSync(RUNTIME_STORE);
+        }
       } catch {
         // ignore cleanup errors
       }
