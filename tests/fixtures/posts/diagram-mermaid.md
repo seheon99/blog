@@ -1,6 +1,7 @@
 ---
 title: "Mermaid diagrams"
 description: "A small flowchart rendered through Mermaid"
+type: article
 createdAt: 2024-02-15
 tags:
   - Diagrams

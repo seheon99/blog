@@ -1,6 +1,7 @@
 ---
 title: "TypeScript narrowing"
 description: "How TypeScript narrows union types in control-flow positions"
+type: article
 createdAt: 2024-02-10
 tags:
   - TypeScript
