@@ -5,6 +5,7 @@ ENV PNPM_HOME=/pnpm
 ENV PATH="${PNPM_HOME}:$PATH"
 WORKDIR /app
 RUN apk add --no-cache libc6-compat git \
+    && npm install --global corepack@latest \
     && corepack enable pnpm
 
 COPY package.json pnpm-lock.yaml ./
