@@ -600,7 +600,7 @@ const PreviewCard = forwardRef<
           </span>
         </button>
       )}
-      <div className="mb-2 flex items-center gap-2 pr-6 font-mono text-[10px] uppercase tracking-[0.04em] text-fg-3">
+      <div className="mb-2 flex items-center gap-2 pr-6 text-[10px] uppercase tracking-[0.04em] text-fg-3">
         {date && <time dateTime={node.createdAt}>{date}</time>}
         {date && <span aria-hidden="true">·</span>}
         <span>{node.readMinutes} min</span>
@@ -623,7 +623,7 @@ const PreviewCard = forwardRef<
         <a
           href={node.href}
           onClick={(e) => e.stopPropagation()}
-          className="mt-3 -mx-1 block border-t border-dashed border-border px-1 pt-3 font-mono text-xs font-medium text-brand-600 transition-colors hover:text-brand-700"
+          className="mt-3 -mx-1 block border-t border-dashed border-border px-1 pt-3 text-xs font-medium text-brand-600 transition-colors hover:text-brand-700"
         >
           open article →
         </a>
