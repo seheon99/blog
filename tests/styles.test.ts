@@ -72,32 +72,32 @@ describe("global.css — accessibility polish (Phase 7)", () => {
   });
 });
 
-describe("global.css — Pretendard self-hosting", () => {
-  it("declares all 9 Pretendard weights via @font-face", () => {
+describe("global.css — MaruBuri self-hosting", () => {
+  it("declares all 9 MaruBuri weights via @font-face", () => {
     for (const weight of [100, 200, 300, 400, 500, 600, 700, 800, 900]) {
       const face = new RegExp(
-        `@font-face\\s*\\{[^}]*Pretendard[^}]*${weight}[^}]*\\}`,
+        `@font-face\\s*\\{[^}]*MaruBuri[^}]*${weight}[^}]*\\}`,
       );
       expect(css).toMatch(face);
     }
   });
 
   it("references self-hosted woff2 paths under ./fonts/", () => {
-    expect(css).toMatch(/url\("\.\/fonts\/Pretendard-Regular\.woff2"\)/);
-    expect(css).toMatch(/url\("\.\/fonts\/Pretendard-Bold\.woff2"\)/);
+    expect(css).toMatch(/url\("\.\/fonts\/MaruBuri-Regular\.woff2"\)/);
+    expect(css).toMatch(/url\("\.\/fonts\/MaruBuri-Bold\.woff2"\)/);
   });
 
   it("ships all 9 weight files in src/styles/fonts/", () => {
     const expected = [
-      "Pretendard-Thin.woff2",
-      "Pretendard-ExtraLight.woff2",
-      "Pretendard-Light.woff2",
-      "Pretendard-Regular.woff2",
-      "Pretendard-Medium.woff2",
-      "Pretendard-SemiBold.woff2",
-      "Pretendard-Bold.woff2",
-      "Pretendard-ExtraBold.woff2",
-      "Pretendard-Black.woff2",
+      "MaruBuri-Thin.woff2",
+      "MaruBuri-ExtraLight.woff2",
+      "MaruBuri-Light.woff2",
+      "MaruBuri-Regular.woff2",
+      "MaruBuri-Medium.woff2",
+      "MaruBuri-SemiBold.woff2",
+      "MaruBuri-Bold.woff2",
+      "MaruBuri-ExtraBold.woff2",
+      "MaruBuri-Black.woff2",
     ];
     for (const file of expected) {
       const fileUrl = new URL(file, fontsUrl);

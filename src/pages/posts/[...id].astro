@@ -48,7 +48,8 @@ const dateLabel = formatPostDate(post.data.createdAt)?.toUpperCase();
 const updatedDateLabel = post.data.updatedAt
   ? formatPostDate(post.data.updatedAt)?.toUpperCase()
   : null;
-const shouldShowUpdatedDate = isNotePost(post.data.type) && !!post.data.updatedAt;
+const shouldShowUpdatedDate =
+  isNotePost(post.data.type) && !!post.data.updatedAt;
 
 const allPosts = await getCollection("posts");
 const graph = buildPostGraph(allPosts);
@@ -58,14 +59,12 @@ const backlinks = getBacklinks(allPosts, post.id);
 <BaseLayout title={post.data.title} description={post.data.description}>
   <ReadingProgress />
   <div class="mx-auto w-full max-w-[1280px] px-8 pt-12 pb-24 max-md:px-4">
-    <div
-      class="grid grid-cols-1 gap-16 lg:grid-cols-[minmax(0,1fr)_280px]"
-    >
+    <div class="grid grid-cols-1 gap-16 lg:grid-cols-[minmax(0,1fr)_280px]">
       <article class="min-w-0">
         <header>
           <a
             href="/"
-            class="inline-block font-mono text-[11px] uppercase tracking-[0.04em] text-fg-3 transition-colors hover:text-fg-1"
+            class="inline-block text-[11px] uppercase tracking-[0.04em] text-fg-3 transition-colors hover:text-fg-1"
           >
             ← all writing
           </a>
@@ -84,9 +83,7 @@ const backlinks = getBacklinks(allPosts, post.id);
           <p class="mt-4 max-w-[64ch] text-lg leading-[1.6] text-fg-2">
             {post.data.description}
           </p>
-          <div
-            class="mt-6 font-mono text-[11px] uppercase tracking-[0.04em] text-fg-3"
-          >
+          <div class="mt-6 text-[11px] uppercase tracking-[0.04em] text-fg-3">
             {
               shouldShowUpdatedDate ? (
                 <time datetime={post.data.updatedAt!.toISOString()}>
@@ -116,9 +113,7 @@ const backlinks = getBacklinks(allPosts, post.id);
         aria-label="margin rail"
       >
         <section class="border-l border-border pl-4">
-          <p
-            class="mb-3 font-mono text-[11px] uppercase tracking-[0.04em] text-fg-3"
-          >
+          <p class="mb-3 text-[11px] uppercase tracking-[0.04em] text-fg-3">
             neighborhood
           </p>
           <PostGraphMini
@@ -130,11 +125,8 @@ const backlinks = getBacklinks(allPosts, post.id);
         </section>
         {
           toc.length > 0 && (
-            <section
-              data-toc
-              class="mt-8 border-l border-border pl-4"
-            >
-              <p class="mb-3 font-mono text-[11px] uppercase tracking-[0.04em] text-fg-3">
+            <section data-toc class="mt-8 border-l border-border pl-4">
+              <p class="mb-3 text-[11px] uppercase tracking-[0.04em] text-fg-3">
                 on this page
               </p>
               <ul class="flex flex-col gap-0.5 leading-snug">
@@ -146,9 +138,7 @@ const backlinks = getBacklinks(allPosts, post.id);
                       data-toc-slug={h.slug}
                       class:list={[
                         "block border-l-2 border-transparent py-1 text-fg-3 transition-colors hover:text-fg-1 data-[active=true]:border-brand-500 data-[active=true]:font-semibold data-[active=true]:text-fg-1",
-                        h.depth === 3
-                          ? "pl-7 text-xs"
-                          : "pl-3 text-[13px]",
+                        h.depth === 3 ? "pl-7 text-xs" : "pl-3 text-[13px]",
                       ]}
                     >
                       {h.text}
@@ -159,25 +149,20 @@ const backlinks = getBacklinks(allPosts, post.id);
             </section>
           )
         }
-        <section
-          data-backlinks
-          class="mt-8 border-l border-border pl-4"
-        >
-          <p
-            class="mb-3 font-mono text-[11px] uppercase tracking-[0.04em] text-fg-3"
-          >
+        <section data-backlinks class="mt-8 border-l border-border pl-4">
+          <p class="mb-3 text-[11px] uppercase tracking-[0.04em] text-fg-3">
             backlinks
             {
               backlinks.length > 0 && (
-                <span class="ml-1 text-fg-3 opacity-60">{backlinks.length}</span>
+                <span class="ml-1 text-fg-3 opacity-60">
+                  {backlinks.length}
+                </span>
               )
             }
           </p>
           {
             backlinks.length === 0 ? (
-              <p class="text-xs leading-relaxed text-fg-3">
-                no backlinks yet
-              </p>
+              <p class="text-xs leading-relaxed text-fg-3">no backlinks yet</p>
             ) : (
               <ul class="flex flex-col">
                 {backlinks.map((bl, i) => (
@@ -206,10 +191,7 @@ const backlinks = getBacklinks(allPosts, post.id);
 
 <script>
   import { renderMermaidDiagrams } from "@/lib/mermaid-render";
-  import {
-    setupTocScrollSpy,
-    TOC_TOP_OFFSET,
-  } from "@/lib/toc-scroll-spy";
+  import { setupTocScrollSpy, TOC_TOP_OFFSET } from "@/lib/toc-scroll-spy";
 
   renderMermaidDiagrams();
 
@@ -253,18 +235,14 @@ const backlinks = getBacklinks(allPosts, post.id);
       return cachedScroller;
     }
 
-    const reducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    );
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     for (const { link, el } of headings) {
       link.addEventListener("click", (event) => {
         event.preventDefault();
         const scroller = getScroller();
         const top =
-          el.getBoundingClientRect().top +
-          scroller.scrollTop -
-          TOC_TOP_OFFSET;
+          el.getBoundingClientRect().top + scroller.scrollTop - TOC_TOP_OFFSET;
         scroller.scrollTo({
           top,
           behavior: reducedMotion.matches ? "auto" : "smooth",

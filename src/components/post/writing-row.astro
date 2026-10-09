@@ -21,9 +21,7 @@ const dateLabel = formatPostDate(createdAt)?.toUpperCase();
   href={href}
   class="group block w-full border-t border-border py-7 transition-[padding] duration-150 hover:pl-1.5 last:border-b"
 >
-  <div
-    class="mb-2.5 font-mono text-[11px] uppercase tracking-[0.04em] text-fg-3"
-  >
+  <div class="mb-2.5 text-[11px] uppercase tracking-[0.04em] text-fg-3">
     <time datetime={dateTime}>{dateLabel}</time>
     <span class="px-1.5">·</span>
     <span>{readMinutes} MIN</span>
