@@ -25,30 +25,6 @@
   font-weight: 400;
   font-display: swap;
 }
-@font-face {
-  font-family: "MaruBuri";
-  src: url(https://hangeul.pstatic.net/hangeul_static/webfont/MaruBuri/MaruBuri-SemiBold.woff2);
-  font-weight: 400;
-  font-display: swap;
-}
-@font-face {
-  font-family: "MaruBuri";
-  src: url(https://hangeul.pstatic.net/hangeul_static/webfont/MaruBuri/MaruBuri-Bold.woff2);
-  font-weight: 400;
-  font-display: swap;
-}
-@font-face {
-  font-family: "MaruBuri";
-  src: url(https://hangeul.pstatic.net/hangeul_static/webfont/MaruBuri/MaruBuri-Light.woff2);
-  font-weight: 400;
-  font-display: swap;
-}
-@font-face {
-  font-family: "MaruBuri";
-  src: url(https://hangeul.pstatic.net/hangeul_static/webfont/MaruBuri/MaruBuri-ExtraLight.woff2);
-  font-weight: 400;
-  font-display: swap;
-}
 
 @font-face {
   font-family: "MaruBuri";
