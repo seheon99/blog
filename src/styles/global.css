@@ -66,7 +66,7 @@
 
 /* ---------- Tailwind theme bridge ------------------------------------- */
 @theme inline {
-  --font-sans:
+  --font-serif:
     "MaruBuri", -apple-system, BlinkMacSystemFont, system-ui, "Segoe UI",
     "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
   --font-mono:
@@ -219,7 +219,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-background text-foreground font-serif;
   }
   :focus-visible {
     outline: 2px solid var(--brand-500);
