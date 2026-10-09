@@ -1,0 +1,63 @@
+name: 버그 리포트
+description: 블로그에서 기대와 다르게 동작하는 부분을 알려주세요.
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        제보 전에 기존 이슈를 확인해 주세요.
+        로그나 화면을 첨부할 때 토큰, 개인정보 등 민감한 정보는 제거해 주세요.
+
+  - type: input
+    id: page
+    attributes:
+      label: 문제가 발생한 페이지
+      description: 관련 URL이나 화면 이름을 알려주세요.
+      placeholder: https://blog.seheon.kr/posts/example
+    validations:
+      required: false
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 재현 절차
+      description: 동일한 문제를 확인할 수 있는 단계를 순서대로 적어 주세요.
+      placeholder: |
+        1. 해당 페이지에 접속합니다.
+        2. ...
+        3. 문제가 발생합니다.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 기대한 동작
+      description: 정상적으로 동작한다면 어떤 결과가 나와야 하나요?
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: 실제 동작
+      description: 실제로 관찰한 결과를 적어 주세요.
+    validations:
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: 실행 환경
+      description: 브라우저 및 운영체제 등 관련 환경을 알려주세요.
+      placeholder: Chrome / Windows 11
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: 추가 정보
+      description: 스크린샷, 콘솔 오류, 관련 링크 등이 있다면 첨부해 주세요.
+    validations:
+      required: false
