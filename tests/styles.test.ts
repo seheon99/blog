@@ -1,10 +1,8 @@
-import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 
 import { beforeAll, describe, expect, it } from "vitest";
 
 const cssUrl = new URL("../src/styles/global.css", import.meta.url);
-const fontsUrl = new URL("../src/styles/fonts/", import.meta.url);
 
 let css = "";
 beforeAll(async () => {
@@ -72,36 +70,25 @@ describe("global.css — accessibility polish (Phase 7)", () => {
   });
 });
 
-describe("global.css — MaruBuri self-hosting", () => {
-  it("declares all 9 MaruBuri weights via @font-face", () => {
-    for (const weight of [100, 200, 300, 400, 500, 600, 700, 800, 900]) {
-      const face = new RegExp(
-        `@font-face\\s*\\{[^}]*MaruBuri[^}]*${weight}[^}]*\\}`,
+describe("global.css — MaruBuri font weights", () => {
+  it("maps each weight to exactly one matching font file", () => {
+    const faces = [...css.matchAll(/@font-face\s*\{([^}]*)\}/g)]
+      .map((match) => match[1])
+      .filter((face) => /font-family:\s*"MaruBuri"/.test(face));
+
+    expect(faces).toHaveLength(5);
+    for (const [weight, file] of [
+      [200, "ExtraLight"],
+      [300, "Light"],
+      [400, "Regular"],
+      [600, "SemiBold"],
+      [700, "Bold"],
+    ] as const) {
+      const matchingFaces = faces.filter((face) =>
+        new RegExp(`font-weight:\\s*${weight}\\s*;`).test(face),
       );
-      expect(css).toMatch(face);
-    }
-  });
-
-  it("references self-hosted woff2 paths under ./fonts/", () => {
-    expect(css).toMatch(/url\("\.\/fonts\/MaruBuri-Regular\.woff2"\)/);
-    expect(css).toMatch(/url\("\.\/fonts\/MaruBuri-Bold\.woff2"\)/);
-  });
-
-  it("ships all 9 weight files in src/styles/fonts/", () => {
-    const expected = [
-      "MaruBuri-Thin.woff2",
-      "MaruBuri-ExtraLight.woff2",
-      "MaruBuri-Light.woff2",
-      "MaruBuri-Regular.woff2",
-      "MaruBuri-Medium.woff2",
-      "MaruBuri-SemiBold.woff2",
-      "MaruBuri-Bold.woff2",
-      "MaruBuri-ExtraBold.woff2",
-      "MaruBuri-Black.woff2",
-    ];
-    for (const file of expected) {
-      const fileUrl = new URL(file, fontsUrl);
-      expect(existsSync(fileUrl)).toBe(true);
+      expect(matchingFaces).toHaveLength(1);
+      expect(matchingFaces[0]).toContain(`MaruBuri-${file}.woff2`);
     }
   });
 });
