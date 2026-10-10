@@ -1,0 +1,112 @@
+[
+  {
+    "mode": "light",
+    "normal": "oklch(0.52 0.18 257)",
+    "hover": "oklch(0.45 0.17 258)",
+    "contrast": [
+      {
+        "color": "oklch(0.55 0.18 256)",
+        "badge": 7.58,
+        "graph": 4.67,
+        "miniGraph": 4.4
+      },
+      {
+        "color": "oklch(0.56 0.12 195)",
+        "badge": 6.69,
+        "graph": 4,
+        "miniGraph": 3.76
+      },
+      {
+        "color": "oklch(0.55 0.16 30)",
+        "badge": 7.97,
+        "graph": 4.93,
+        "miniGraph": 4.64
+      },
+      {
+        "color": "oklch(0.55 0.18 320)",
+        "badge": 8.03,
+        "graph": 5.02,
+        "miniGraph": 4.73
+      },
+      {
+        "color": "oklch(0.58 0.18 0)",
+        "badge": 7.27,
+        "graph": 4.44,
+        "miniGraph": 4.18
+      },
+      {
+        "color": "oklch(0.62 0.13 100)",
+        "badge": 5.8,
+        "graph": 3.4,
+        "miniGraph": 3.2
+      },
+      {
+        "color": "oklch(0.55 0.16 145)",
+        "badge": 7.03,
+        "graph": 4.29,
+        "miniGraph": 4.04
+      },
+      {
+        "color": "oklch(0.55 0.02 256)",
+        "badge": 7.44,
+        "graph": 4.58,
+        "miniGraph": 4.31
+      }
+    ]
+  },
+  {
+    "mode": "dark",
+    "normal": "oklch(0.78 0.1 254)",
+    "hover": "oklch(0.86 0.1 254)",
+    "contrast": [
+      {
+        "color": "oklch(0.55 0.18 256)",
+        "badge": 7.58,
+        "graph": 3.99,
+        "miniGraph": 3.78
+      },
+      {
+        "color": "oklch(0.56 0.12 195)",
+        "badge": 6.69,
+        "graph": 4.66,
+        "miniGraph": 4.41
+      },
+      {
+        "color": "oklch(0.55 0.16 30)",
+        "badge": 7.97,
+        "graph": 3.79,
+        "miniGraph": 3.58
+      },
+      {
+        "color": "oklch(0.55 0.18 320)",
+        "badge": 8.03,
+        "graph": 3.71,
+        "miniGraph": 3.51
+      },
+      {
+        "color": "oklch(0.58 0.18 0)",
+        "badge": 7.27,
+        "graph": 4.2,
+        "miniGraph": 3.98
+      },
+      {
+        "color": "oklch(0.62 0.13 100)",
+        "badge": 5.8,
+        "graph": 5.49,
+        "miniGraph": 5.19
+      },
+      {
+        "color": "oklch(0.55 0.16 145)",
+        "badge": 7.03,
+        "graph": 4.35,
+        "miniGraph": 4.11
+      },
+      {
+        "color": "oklch(0.55 0.02 256)",
+        "badge": 7.44,
+        "graph": 4.07,
+        "miniGraph": 3.85
+      }
+    ]
+  }
+]

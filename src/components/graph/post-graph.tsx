@@ -607,7 +607,7 @@ const PreviewCard = forwardRef<
         {node.primaryTag && (
           <>
             <span aria-hidden="true">·</span>
-            <span className="text-brand-600">{node.primaryTag}</span>
+            <span className="text-link">{node.primaryTag}</span>
           </>
         )}
       </div>
@@ -623,7 +623,7 @@ const PreviewCard = forwardRef<
         <a
           href={node.href}
           onClick={(e) => e.stopPropagation()}
-          className="mt-3 -mx-1 block border-t border-dashed border-border px-1 pt-3 text-xs font-medium text-brand-600 transition-colors hover:text-brand-700"
+          className="mt-3 -mx-1 block border-t border-dashed border-border px-1 pt-3 text-xs font-medium text-link transition-colors hover:text-link-hover"
         >
           open article →
         </a>

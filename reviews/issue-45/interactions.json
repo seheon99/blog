@@ -1,0 +1,208 @@
+{
+  "result": [
+    {
+      "mode": "light",
+      "url": "/?view=list",
+      "hover": [
+        {
+          "text": "MAY 18, 2026 · 3 MIN  · #Web",
+          "color": "rgb(100, 97, 91)",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "text": "HTTP/0.9부터 HTTP/1.1까지",
+          "color": "oklch(0.45 0.17 258)",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "text": "유럽의 입자물리 연구소에서 만들어진 HTTP",
+          "color": "oklch(0.371 0 0)",
+          "background": "rgba(0, 0, 0, 0)"
+        }
+      ],
+      "focus": {
+        "visible": true,
+        "outline": "oklch(0.585 0.165 256) solid 2px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "light",
+      "url": "/?view=graph",
+      "hover": [
+        {
+          "text": "HTTP/0.9부터 HTTP/1.1까지",
+          "color": "oklch(0.45 0.17 258)",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "text": "유럽의 입자물리 연구소에서 만들어진 HTTP",
+          "color": "oklch(0.371 0 0)",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "text": "MAY 18, 2026 · 3 MIN  · #Web",
+          "color": "rgb(100, 97, 91)",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "text": "read\n→",
+          "color": "oklch(0.45 0.17 258)",
+          "background": "rgba(0, 0, 0, 0)"
+        }
+      ],
+      "focus": {
+        "visible": true,
+        "outline": "oklch(0.585 0.165 256) solid 2px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "light",
+      "url": "/posts",
+      "hover": [
+        {
+          "text": "2026. 5. 18.",
+          "color": "rgb(100, 97, 91)",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "text": "유럽의 입자물리 연구소에서 만들어진 HTTP",
+          "color": "rgb(100, 97, 91)",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "text": "Web",
+          "color": "oklch(0.205 0 0)",
+          "background": "rgb(238, 235, 228)"
+        }
+      ],
+      "focus": {
+        "visible": true,
+        "outline": "oklch(0.585 0.165 256) none 2px",
+        "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgb(250, 248, 243) 0px 0px 0px 2px, rgb(100, 97, 91) 0px 0px 0px 4px, oklab(0 0 0 / 0.1) 0px 10px 15px -3px, oklab(0 0 0 / 0.1) 0px 4px 6px -4px"
+      }
+    },
+    {
+      "mode": "dark",
+      "url": "/?view=list",
+      "hover": [
+        {
+          "text": "MAY 18, 2026 · 3 MIN  · #Web",
+          "color": "oklch(0.708 0 0)",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "text": "HTTP/0.9부터 HTTP/1.1까지",
+          "color": "oklch(0.86 0.1 254)",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "text": "유럽의 입자물리 연구소에서 만들어진 HTTP",
+          "color": "oklch(0.87 0 0)",
+          "background": "rgba(0, 0, 0, 0)"
+        }
+      ],
+      "focus": {
+        "visible": true,
+        "outline": "oklch(0.585 0.165 256) solid 2px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "dark",
+      "url": "/?view=graph",
+      "hover": [
+        {
+          "text": "HTTP/0.9부터 HTTP/1.1까지",
+          "color": "oklch(0.86 0.1 254)",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "text": "유럽의 입자물리 연구소에서 만들어진 HTTP",
+          "color": "oklch(0.87 0 0)",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "text": "MAY 18, 2026 · 3 MIN  · #Web",
+          "color": "oklch(0.708 0 0)",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "text": "read\n→",
+          "color": "oklch(0.86 0.1 254)",
+          "background": "rgba(0, 0, 0, 0)"
+        }
+      ],
+      "focus": {
+        "visible": true,
+        "outline": "oklch(0.585 0.165 256) solid 2px",
+        "shadow": "none"
+      }
+    },
+    {
+      "mode": "dark",
+      "url": "/posts",
+      "hover": [
+        {
+          "text": "2026. 5. 18.",
+          "color": "oklch(0.708 0 0)",
+          "background": "rgba(0, 0, 0, 0)"
+        },
+        {
+          "text": "유럽의 입자물리 연구소에서 만들어진 HTTP",
+          "color": "oklch(0.708 0 0)",
+          "background": "rgba(0, 0, 0, 0)"
+        }
+      ],
+      "focus": {
+        "visible": true,
+        "outline": "oklch(0.585 0.165 256) none 2px",
+        "shadow": "rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, oklch(0.145 0 0) 0px 0px 0px 2px, oklch(0.556 0 0) 0px 0px 0px 4px, oklab(0 0 0 / 0.1) 0px 10px 15px -3px, oklab(0 0 0 / 0.1) 0px 4px 6px -4px"
+      }
+    }
+  ],
+  "overflow": {
+    "width": 390,
+    "scrollWidth": 486,
+    "elements": [
+      {
+        "tag": "CODE",
+        "class": "",
+        "text": "<html>\n<body>\n<h1>Not Found</h1>\n<p>The ",
+        "width": 453.703125
+      },
+      {
+        "tag": "SPAN",
+        "class": "line",
+        "text": "<p>The requested URL was not found on th",
+        "width": 453.703125
+      },
+      {
+        "tag": "SPAN",
+        "class": "",
+        "text": ">The requested URL was not found on this",
+        "width": 420.078125
+      },
+      {
+        "tag": "SPAN",
+        "class": "",
+        "text": "p",
+        "width": 8.40625
+      },
+      {
+        "tag": "SPAN",
+        "class": "",
+        "text": ">",
+        "width": 8.40625
+      },
+      {
+        "tag": "A",
+        "class": "",
+        "text": "https://www.w3.org/Protocols/HTTP/AsImpl",
+        "width": 438.25
+      }
+    ]
+  },
+  "baselineOverflow": 486
+}
