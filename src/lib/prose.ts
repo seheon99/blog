@@ -2,10 +2,10 @@ import { cn } from "@/lib/utils";
 
 export const proseClasses = cn(
   // Base
-  "prose prose-neutral dark:prose-invert max-w-none",
+  "prose text-base md:text-lg font-normal prose-neutral dark:prose-invert max-w-none wrap-break-word",
 
   // Body text
-  "prose-p:text-base md:prose-p:text-[1.0625rem]",
+  "prose-p:text-base md:prose-p:text-lg",
   "prose-p:leading-7 md:prose-p:leading-8",
 
   // Lead / emphasis
@@ -20,7 +20,7 @@ export const proseClasses = cn(
   "prose-h3:text-xl md:prose-h3:text-2xl prose-h3:leading-snug",
   "prose-h4:text-lg prose-h4:leading-snug",
   "prose-h5:text-base prose-h5:leading-normal",
-  "prose-h6:text-sm prose-h6:leading-normal",
+  "prose-h6:text-base prose-h6:leading-normal",
 
   "prose-headings:font-semibold prose-headings:tracking-tight",
   "prose-headings:scroll-mt-24",
@@ -36,7 +36,7 @@ export const proseClasses = cn(
   "prose-li:my-1.5",
 
   // Code
-  "prose-code:text-sm prose-code:font-medium",
+  "prose-code:text-base prose-code:font-normal prose-pre:text-base",
   "prose-code:before:content-none prose-code:after:content-none",
 
   // Links
@@ -44,7 +44,7 @@ export const proseClasses = cn(
   "hover:prose-a:underline",
 
   // Tables
-  "prose-table:text-sm",
+  "prose-table:text-base",
   "prose-th:font-semibold",
   "prose-td:align-top",
 

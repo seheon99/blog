@@ -19,10 +19,10 @@ const { prevPost, nextPost } = Astro.props;
         href={`/posts/${prevPost.id}`}
         class="group flex max-w-[20rem] flex-col items-start gap-1.5"
       >
-        <span class="text-[11px] uppercase tracking-[0.04em] text-fg-3 transition-colors group-hover:text-fg-1">
+        <span class="text-sm uppercase tracking-[0.04em] text-fg-3 transition-colors group-hover:text-fg-1">
           ← previous
         </span>
-        <span class="text-[15px] font-semibold leading-[1.4] text-fg-1 transition-colors group-hover:text-brand-600">
+        <span class="text-base font-semibold leading-[1.4] text-fg-1 transition-colors group-hover:text-brand-600">
           {prevPost.data.title}
         </span>
       </a>
@@ -36,10 +36,10 @@ const { prevPost, nextPost } = Astro.props;
         href={`/posts/${nextPost.id}`}
         class="group ml-auto flex max-w-[20rem] flex-col items-end gap-1.5 text-right"
       >
-        <span class="text-[11px] uppercase tracking-[0.04em] text-fg-3 transition-colors group-hover:text-fg-1">
+        <span class="text-sm uppercase tracking-[0.04em] text-fg-3 transition-colors group-hover:text-fg-1">
           next →
         </span>
-        <span class="text-[15px] font-semibold leading-[1.4] text-fg-1 transition-colors group-hover:text-brand-600">
+        <span class="text-base font-semibold leading-[1.4] text-fg-1 transition-colors group-hover:text-brand-600">
           {nextPost.data.title}
         </span>
       </a>

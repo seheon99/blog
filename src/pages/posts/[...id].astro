@@ -64,7 +64,7 @@ const backlinks = getBacklinks(allPosts, post.id);
         <header>
           <a
             href="/"
-            class="inline-block text-[11px] uppercase tracking-[0.04em] text-fg-3 transition-colors hover:text-fg-1"
+            class="inline-block text-sm uppercase tracking-[0.04em] text-fg-3 transition-colors hover:text-fg-1"
           >
             ← all writing
           </a>
@@ -76,14 +76,14 @@ const backlinks = getBacklinks(allPosts, post.id);
             )
           }
           <h1
-            class="mt-4 text-[44px] font-extrabold leading-[1.1] tracking-[-0.04em] text-fg-1 max-md:text-[32px]"
+            class="mt-4 text-3xl md:text-5xl font-bold leading-[1.1] tracking-[-0.04em] text-fg-1"
           >
             {post.data.title}
           </h1>
           <p class="mt-4 max-w-[64ch] text-lg leading-[1.6] text-fg-2">
             {post.data.description}
           </p>
-          <div class="mt-6 text-[11px] uppercase tracking-[0.04em] text-fg-3">
+          <div class="mt-6 text-sm uppercase tracking-[0.04em] text-fg-3">
             {
               shouldShowUpdatedDate ? (
                 <time datetime={post.data.updatedAt!.toISOString()}>
@@ -113,7 +113,7 @@ const backlinks = getBacklinks(allPosts, post.id);
         aria-label="margin rail"
       >
         <section class="border-l border-border pl-4">
-          <p class="mb-3 text-[11px] uppercase tracking-[0.04em] text-fg-3">
+          <p class="mb-3 text-sm uppercase tracking-[0.04em] text-fg-3">
             neighborhood
           </p>
           <PostGraphMini
@@ -126,7 +126,7 @@ const backlinks = getBacklinks(allPosts, post.id);
         {
           toc.length > 0 && (
             <section data-toc class="mt-8 border-l border-border pl-4">
-              <p class="mb-3 text-[11px] uppercase tracking-[0.04em] text-fg-3">
+              <p class="mb-3 text-sm uppercase tracking-[0.04em] text-fg-3">
                 on this page
               </p>
               <ul class="flex flex-col gap-0.5 leading-snug">
@@ -137,8 +137,8 @@ const backlinks = getBacklinks(allPosts, post.id);
                       data-toc-link
                       data-toc-slug={h.slug}
                       class:list={[
-                        "block border-l-2 border-transparent py-1 text-fg-3 transition-colors hover:text-fg-1 data-[active=true]:border-brand-500 data-[active=true]:font-semibold data-[active=true]:text-fg-1",
-                        h.depth === 3 ? "pl-7 text-xs" : "pl-3 text-[13px]",
+                        "block border-l-2 border-transparent py-1 text-sm text-fg-3 transition-colors hover:text-fg-1 data-[active=true]:border-brand-500 data-[active=true]:font-semibold data-[active=true]:text-fg-1",
+                        h.depth === 3 ? "pl-7" : "pl-3",
                       ]}
                     >
                       {h.text}
@@ -150,7 +150,7 @@ const backlinks = getBacklinks(allPosts, post.id);
           )
         }
         <section data-backlinks class="mt-8 border-l border-border pl-4">
-          <p class="mb-3 text-[11px] uppercase tracking-[0.04em] text-fg-3">
+          <p class="mb-3 text-sm uppercase tracking-[0.04em] text-fg-3">
             backlinks
             {
               backlinks.length > 0 && (
@@ -162,7 +162,7 @@ const backlinks = getBacklinks(allPosts, post.id);
           </p>
           {
             backlinks.length === 0 ? (
-              <p class="text-xs leading-relaxed text-fg-3">no backlinks yet</p>
+              <p class="text-sm leading-relaxed text-fg-3">no backlinks yet</p>
             ) : (
               <ul class="flex flex-col">
                 {backlinks.map((bl, i) => (
