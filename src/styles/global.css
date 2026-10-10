@@ -76,6 +76,9 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-link: var(--link);
+  --color-link-hover: var(--link-hover);
+  --color-tag-foreground: var(--tag-foreground);
 
   --color-fg-1: var(--fg-1);
   --color-fg-2: var(--fg-2);
@@ -100,7 +103,7 @@
 
 /* ---------- Tokens ---------------------------------------------------- */
 :root {
-  /* Neutrals — true neutral with a hair of warmth */
+  /* Neutrals — shared by both themes */
   --neutral-50: oklch(0.985 0 0);
   --neutral-100: oklch(0.97 0 0);
   --neutral-200: oklch(0.922 0 0);
@@ -129,11 +132,14 @@
   /* Plain-language aliases */
   --fg-1: var(--neutral-950);
   --fg-2: var(--neutral-700);
-  --fg-3: var(--neutral-500);
-  --fg-4: var(--neutral-400);
-  --bg-1: oklch(1 0 0);
-  --bg-2: var(--neutral-50);
-  --bg-3: var(--neutral-100);
+  --fg-3: #64615b;
+  --fg-4: #64615b;
+  /* Warm paper surfaces: page, recessed surface, hover/selection. */
+  --bg-1: #faf8f3;
+  --bg-2: #f4f1ea;
+  --bg-3: #eeebe4;
+  /* Filled tag labels stay light in both themes. */
+  --tag-foreground: #fcfaf7;
   --link: var(--brand-600);
   --link-hover: var(--brand-700);
 
@@ -147,16 +153,17 @@
   --popover-foreground: var(--fg-1);
   --primary: var(--neutral-900);
   --primary-foreground: var(--neutral-50);
-  --secondary: var(--neutral-100);
+  --secondary: var(--bg-3);
   --secondary-foreground: var(--neutral-900);
-  --muted: var(--neutral-100);
+  --muted: var(--bg-3);
   --muted-foreground: var(--fg-3);
-  --accent: var(--neutral-100);
+  --accent: var(--bg-3);
   --accent-foreground: var(--neutral-900);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: var(--neutral-200);
-  --input: var(--neutral-200);
-  --ring: var(--neutral-400);
+  /* Decorative dividers stay quiet; input and focus boundaries are stronger. */
+  --border: #d8d3c8;
+  --input: #827c70;
+  --ring: var(--fg-3);
 }
 
 .dark {

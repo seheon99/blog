@@ -22,7 +22,7 @@ const { prevPost, nextPost } = Astro.props;
         <span class="text-sm uppercase tracking-[0.04em] text-fg-3 transition-colors group-hover:text-fg-1">
           ← previous
         </span>
-        <span class="text-base font-semibold leading-[1.4] text-fg-1 transition-colors group-hover:text-brand-600">
+        <span class="text-base font-semibold leading-[1.4] text-fg-1 transition-colors group-hover:text-link-hover">
           {prevPost.data.title}
         </span>
       </a>
@@ -39,7 +39,7 @@ const { prevPost, nextPost } = Astro.props;
         <span class="text-sm uppercase tracking-[0.04em] text-fg-3 transition-colors group-hover:text-fg-1">
           next →
         </span>
-        <span class="text-base font-semibold leading-[1.4] text-fg-1 transition-colors group-hover:text-brand-600">
+        <span class="text-base font-semibold leading-[1.4] text-fg-1 transition-colors group-hover:text-link-hover">
           {nextPost.data.title}
         </span>
       </a>

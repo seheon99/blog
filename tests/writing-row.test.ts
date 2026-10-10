@@ -50,8 +50,8 @@ describe("WritingRow", () => {
       expect(html).toMatch(/hover:pl-1\.5/);
     });
 
-    it("titles get the brand-600 hover via group-hover", () => {
-      expect(html).toMatch(/group-hover:text-brand-600/);
+    it("titles use the theme-aware link hover color", () => {
+      expect(html).toMatch(/group-hover:text-link-hover/);
     });
 
     it("includes a machine-readable datetime attribute", () => {

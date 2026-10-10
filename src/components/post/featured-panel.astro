@@ -1,6 +1,5 @@
 ---
 import { readMinutes } from "@/lib/read-time";
-import { tagColor } from "@/lib/tag-colors";
 import { formatPostDate } from "@/lib/format-date";
 import type { CollectionEntry } from "astro:content";
 
@@ -32,7 +31,7 @@ const primaryTag = post.data.tags?.[0];
   </p>
   <a href={`/posts/${post.id}`} class="group block">
     <h2
-      class="text-2xl font-bold leading-tight tracking-[-0.03em] text-fg-1 group-hover:text-brand-700"
+      class="text-2xl font-bold leading-tight tracking-[-0.03em] text-fg-1 group-hover:text-link-hover"
     >
       {post.data.title}
     </h2>
@@ -53,13 +52,13 @@ const primaryTag = post.data.tags?.[0];
         primaryTag && (
           <>
             <span aria-hidden="true">·</span>
-            <span style={`color: ${tagColor(primaryTag)}`}>#{primaryTag}</span>
+            <span>#{primaryTag}</span>
           </>
         )
       }
     </div>
     <span
-      class="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand-600 transition-colors group-hover:text-brand-700"
+      class="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-link transition-colors group-hover:text-link-hover"
     >
       read
       <span class="transition-transform group-hover:translate-x-[3px]">→</span>

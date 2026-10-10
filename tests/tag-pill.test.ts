@@ -20,9 +20,9 @@ describe("TagPill", () => {
 
   it("uses the rounded pill chrome with a tag-keyed inline background color", () => {
     expect(html).toMatch(/rounded-full/);
-    expect(html).toMatch(/text-bg-1/);
+    expect(html).toContain("text-tag-foreground");
     // Tag color is applied via inline style sourced from src/lib/tag-colors.
-    expect(html).toMatch(/style="background-color:\s*oklch\(/);
+    expect(html).toMatch(/style="background-color:\s*color-mix\(in oklab, oklch\(/);
   });
 
   it("derives a stable color per tag (different tags → different oklch)", async () => {
