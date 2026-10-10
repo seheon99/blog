@@ -35,8 +35,8 @@ describe("TagPill", () => {
     expect(colorA).not.toEqual(colorB);
   });
 
-  it("uses mono uppercase typography", () => {
-    expect(html).toMatch(/font-mono/);
+  it("uses uppercase typography with the inherited font", () => {
+    expect(html).not.toMatch(/font-mono/);
     expect(html).toMatch(/uppercase/);
   });
 });

@@ -40,6 +40,8 @@ The post content lives in the private [blog-obsidian-vault](https://github.com/s
 
 To keep the suite self-contained, `tests/global-setup.ts` seeds the markdown files under `tests/fixtures/posts/` into `src/content/posts/` only when that directory has no posts of its own, runs `astro sync` to build the data store, and removes the seeded files on teardown. The fixtures are deliberately minimal — just enough to satisfy the page-rendering tests (one post per primary tag, one post with `h2`/`h3` headings for the TOC tests).
 
+Fixtures include `write-up`, `til`, and default `note` posts so the writing filter has representative content. Wikilink plugin tests always index the committed fixtures directly, independent of the checked-out vault.
+
 ## Notes
 
 This repository replaces a legacy [blog-nextjs](https://github.com/seheon99/blog-nextjs). The rewrite was intentional to reduce runtime complexity, improve performance and SEO, and adopt a static-first architecture better suited for long-form content
