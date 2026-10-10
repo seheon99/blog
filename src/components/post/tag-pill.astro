@@ -10,7 +10,7 @@ const { tag } = Astro.props;
 
 <!-- Keep colored fills dark enough for the fixed light label in both themes. -->
 <span
-  class="inline-flex items-center rounded-full px-3 py-[3px] text-[11px] font-medium uppercase tracking-[0.04em] text-tag-foreground"
+  class="inline-flex items-center rounded-full px-3 py-[3px] text-sm font-semibold uppercase tracking-[0.04em] text-tag-foreground"
   style={`background-color: color-mix(in oklab, ${tagColor(tag)} 80%, black)`}
 >
   #{tag}

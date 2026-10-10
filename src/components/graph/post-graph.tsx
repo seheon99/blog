@@ -531,7 +531,7 @@ export default function PostGraph({
                   <text
                     y={r + LABEL_GAP}
                     textAnchor="middle"
-                    fontSize={11}
+                    className="text-sm"
                     fill="var(--fg-1)"
                     style={{ pointerEvents: "none" }}
                   >
@@ -544,7 +544,7 @@ export default function PostGraph({
         </g>
       </svg>
       {rawLinks.length === 0 && (
-        <p className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 text-xs text-fg-3">
+        <p className="pointer-events-none absolute bottom-4 left-1/2 -translate-x-1/2 text-sm text-fg-3">
           no links yet — add{" "}
           <code className="rounded bg-bg-2 px-1 font-mono">[[wikilinks]]</code>{" "}
           between posts to connect them
@@ -600,7 +600,7 @@ const PreviewCard = forwardRef<
           </span>
         </button>
       )}
-      <div className="mb-2 flex items-center gap-2 pr-6 text-[10px] uppercase tracking-[0.04em] text-fg-3">
+      <div className="mb-2 flex flex-wrap items-center gap-2 pr-6 text-sm uppercase tracking-[0.04em] text-fg-3">
         {date && <time dateTime={node.createdAt}>{date}</time>}
         {date && <span aria-hidden="true">·</span>}
         <span>{node.readMinutes} min</span>
@@ -611,11 +611,11 @@ const PreviewCard = forwardRef<
           </>
         )}
       </div>
-      <p className="text-[15px] font-semibold leading-tight text-fg-1">
+      <p className="text-base font-semibold leading-tight text-fg-1">
         {node.title}
       </p>
       {node.description && (
-        <p className="mt-2 line-clamp-3 text-sm leading-snug text-fg-2">
+        <p className="mt-2 line-clamp-3 text-base leading-snug text-fg-2">
           {node.description}
         </p>
       )}
@@ -623,7 +623,7 @@ const PreviewCard = forwardRef<
         <a
           href={node.href}
           onClick={(e) => e.stopPropagation()}
-          className="mt-3 -mx-1 block border-t border-dashed border-border px-1 pt-3 text-xs font-medium text-link transition-colors hover:text-link-hover"
+          className="mt-3 -mx-1 block border-t border-dashed border-border px-1 pt-3 text-sm font-semibold text-link transition-colors hover:text-link-hover"
         >
           open article →
         </a>

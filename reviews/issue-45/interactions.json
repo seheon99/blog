@@ -164,45 +164,39 @@
   ],
   "overflow": {
     "width": 390,
-    "scrollWidth": 486,
+    "scrollWidth": 390,
     "elements": [
       {
         "tag": "CODE",
         "class": "",
         "text": "<html>\n<body>\n<h1>Not Found</h1>\n<p>The ",
-        "width": 453.703125
+        "width": 518.515625
       },
       {
         "tag": "SPAN",
         "class": "line",
         "text": "<p>The requested URL was not found on th",
-        "width": 453.703125
+        "width": 518.515625
       },
       {
         "tag": "SPAN",
         "class": "",
         "text": ">The requested URL was not found on this",
-        "width": 420.078125
+        "width": 480.078125
       },
       {
         "tag": "SPAN",
         "class": "",
         "text": "p",
-        "width": 8.40625
+        "width": 9.609375
       },
       {
         "tag": "SPAN",
         "class": "",
         "text": ">",
-        "width": 8.40625
-      },
-      {
-        "tag": "A",
-        "class": "",
-        "text": "https://www.w3.org/Protocols/HTTP/AsImpl",
-        "width": 438.25
+        "width": 9.609375
       }
     ]
   },
-  "baselineOverflow": 486
+  "baselineOverflow": 390
 }

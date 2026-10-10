@@ -4,7 +4,7 @@ The selected page background is candidate B, `#FAF8F3`. It gives MaruBuri a subt
 
 ## Background comparison
 
-These captures isolate the background change on the original foreground/surface tokens. All three use the same content, 1440×1000 viewport and MaruBuri font weights. The final captures below include the contrast fixes.
+These captures isolate the background change on the original foreground/surface tokens. All three use the same content, 1440×1000 viewport and MaruBuri font weights. The comparison captures precede main’s typography improvement (#47); the refreshed final captures below preserve that improvement and include the contrast fixes.
 
 | Page | Original white `#FFFFFF` | A `#FCFAF7` | B `#FAF8F3` |
 | --- | --- | --- | --- |
@@ -70,9 +70,9 @@ Commands use `ASTRO_TELEMETRY_DISABLED=1` because the execution environment does
 - `npm test`: 179 pass, 15 fail; all 15 failures also occurred before production changes. The six new palette tests pass, including two text/focus checks and the teal graph check observed failing before their fixes.
 - Browser text audit: no detected text contrast failures in the sixteen inspected page/theme/viewport combinations. See `browser-contrast.json`; color checks alone are not a complete WCAG audit.
 - All graph fills exceed 3:1 on both graph backgrounds in both themes, and all filled tag labels exceed 4.5:1. See `graph-colors.json`.
-- Mobile article overflow is preexisting: a 390px viewport has a 486px document width with both original and proposed tokens, caused by an unbroken reference URL. The palette change does not increase it.
+- After incorporating main’s typography improvement (#47), the long reference URL wraps correctly. The 390px article viewport has a 390px document width with both original and proposed color tokens. No inspected final page has horizontal overflow.
 
-The preexisting failures are in header expectations, default home-view expectations, navigation typography and wikilink fixtures. Their exact names are recorded below rather than changing unrelated behavior to make this styling change's suite green.
+The preexisting failures are in header expectations, default home-view expectations, navigation typography and wikilink fixtures. Exact names from the merged verification run:
 
 - `tests/header.test.ts > Header — brand mark > includes the absolutely-positioned brand-blue accent dot`
 - `tests/header.test.ts > Header — brand mark > renders the rotated 'seheon' wordmark linked to /`

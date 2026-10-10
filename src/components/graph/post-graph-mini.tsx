@@ -410,7 +410,7 @@ const MiniPreviewCard = forwardRef<
           </span>
         </button>
       )}
-      <div className="mb-1.5 flex items-center gap-1.5 pr-5 text-[9px] uppercase tracking-[0.04em] text-fg-3">
+      <div className="mb-1.5 flex flex-wrap items-center gap-1.5 pr-5 text-sm uppercase tracking-[0.04em] text-fg-3">
         {date && <time dateTime={node.createdAt}>{date}</time>}
         {date && <span aria-hidden="true">·</span>}
         <span>{node.readMinutes} min</span>
@@ -423,11 +423,11 @@ const MiniPreviewCard = forwardRef<
           </>
         )}
       </div>
-      <p className="text-[13px] font-semibold leading-tight text-fg-1">
+      <p className="text-base font-semibold leading-tight text-fg-1">
         {node.title}
       </p>
       {node.description && (
-        <p className="mt-1.5 line-clamp-2 text-xs leading-snug text-fg-2">
+        <p className="mt-1.5 line-clamp-2 text-base leading-snug text-fg-2">
           {node.description}
         </p>
       )}
@@ -435,7 +435,7 @@ const MiniPreviewCard = forwardRef<
         <a
           href={node.href}
           onClick={(e) => e.stopPropagation()}
-          className="mt-2 -mx-1 block border-t border-dashed border-border px-1 pt-2 text-[11px] font-medium text-link transition-colors hover:text-link-hover"
+          className="mt-2 -mx-1 block border-t border-dashed border-border px-1 pt-2 text-sm font-semibold text-link transition-colors hover:text-link-hover"
         >
           open article →
         </a>

@@ -52,13 +52,13 @@ describe("Header — center nav links", () => {
   it("marks 'writing' active when the route is the home page", async () => {
     const html = await renderAt("https://blog.seheon.kr/");
     const writing = html.match(/<a[^>]*>writing</)?.[0] ?? "";
-    expect(writing).toContain("font-medium text-fg-1");
+    expect(writing).toContain("font-semibold text-fg-1");
   });
 
   it("marks 'writing' muted on a post page", async () => {
     const html = await renderAt("https://blog.seheon.kr/posts/some-slug");
     const writing = html.match(/<a[^>]*>writing</)?.[0] ?? "";
-    expect(writing).not.toContain("font-medium text-fg-1");
+    expect(writing).not.toContain("font-semibold text-fg-1");
     expect(writing).toContain("text-fg-3");
   });
 });

@@ -67,9 +67,9 @@ describe("Post detail shell", () => {
     expect(html).toMatch(/<a[^>]*href="\/"[^>]*>\s*← all writing\s*<\/a>/);
   });
 
-  it("uses a 44px / 32px H1 with -0.04em tracking", () => {
+  it("uses responsive Tailwind heading sizes and a supported bold weight", () => {
     expect(html).toMatch(
-      /<h1[^>]*text-\[44px\][^>]*tracking-\[-0\.04em\][^>]*max-md:text-\[32px\]/,
+      /<h1[^>]*text-3xl md:text-5xl font-bold[^>]*tracking-\[-0\.04em\]/,
     );
   });
 
