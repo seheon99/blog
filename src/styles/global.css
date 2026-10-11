@@ -204,6 +204,35 @@
   body {
     @apply bg-background text-foreground font-serif;
   }
+  /* Work around uneven MaruBuri rasterization in Windows Chrome (#51).
+     Rotate text rather than page/graph containers. The independent rotate
+     property preserves positioning transforms and hover translations.
+     Inline text inherits the rotated rendering of its enclosing text block. */
+  :where(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    p,
+    a,
+    button,
+    label,
+    summary,
+    li,
+    dt,
+    dd,
+    th,
+    td,
+    figcaption,
+    pre,
+    span,
+    time,
+    text
+  ):not(.katex, .katex *) {
+    rotate: 0.04deg;
+  }
   :focus-visible {
     outline: 2px solid var(--brand-500);
     outline-offset: 2px;
