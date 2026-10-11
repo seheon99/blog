@@ -27,10 +27,11 @@ describe("PostFootNav", () => {
     expect(html).toContain("Newer post");
   });
 
-  it("uses mono '← previous' and 'next →' eyebrows", async () => {
+  it("uses uppercase '← previous' and 'next →' eyebrows with the inherited font", async () => {
     const html = await render({ prevPost: prev, nextPost: next });
-    expect(html).toMatch(/font-mono[^"]*"[^>]*>\s*← previous/);
-    expect(html).toMatch(/font-mono[^"]*"[^>]*>\s*next →/);
+    expect(html).toMatch(/uppercase[^"]*"[^>]*>\s*← previous/);
+    expect(html).toMatch(/uppercase[^"]*"[^>]*>\s*next →/);
+    expect(html).not.toContain("font-mono");
   });
 
   it("right-aligns the next link", async () => {

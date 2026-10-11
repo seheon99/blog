@@ -23,17 +23,29 @@ async function renderAt(url: string): Promise<string> {
 
 function paneAttrs(html: string, view: string): string {
   const idx = html.indexOf(`data-view-pane="${view}"`);
-  if (idx === -1) return "";
+  expect(idx, `${view} pane must exist`).toBeGreaterThanOrEqual(0);
   const start = html.lastIndexOf("<", idx);
   const end = html.indexOf(">", idx);
   return html.slice(start, end + 1);
 }
 
 describe("home page — graph pane", () => {
-  it("hides the graph pane and shows the list pane by default", async () => {
+  it("shows the graph pane and hides the list pane by default", async () => {
     const html = await renderAt("https://blog.seheon.kr/");
+    expect(paneAttrs(html, "list")).toMatch(/\bhidden\b/);
+    expect(paneAttrs(html, "graph")).not.toMatch(/\bhidden\b/);
+  });
+
+  it("shows the list pane when ?view=list is present", async () => {
+    const html = await renderAt("https://blog.seheon.kr/?view=list");
     expect(paneAttrs(html, "list")).not.toMatch(/\bhidden\b/);
     expect(paneAttrs(html, "graph")).toMatch(/\bhidden\b/);
+  });
+
+  it("falls back to the graph pane for an unknown view", async () => {
+    const html = await renderAt("https://blog.seheon.kr/?view=mystery");
+    expect(paneAttrs(html, "graph")).not.toMatch(/\bhidden\b/);
+    expect(paneAttrs(html, "list")).toMatch(/\bhidden\b/);
   });
 
   it("shows the graph pane when ?view=graph is present", async () => {

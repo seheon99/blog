@@ -12,6 +12,25 @@ import remarkObsidianWikilink, {
   slugifyHeading,
 } from "../src/lib/remark-obsidian-wikilink";
 
+// Point only the plugin's post index root at committed fixtures. Directory
+// scanning, frontmatter parsing, and link resolution still use the real files,
+// independently of whether the content vault is checked out.
+vi.mock("node:path", async (importOriginal) => {
+  const actual = await importOriginal<{
+    default: typeof import("node:path");
+  }>();
+  return {
+    ...actual,
+    default: {
+      ...actual.default,
+      resolve: (...parts: string[]) =>
+        parts.length === 1 && parts[0] === "src/content/posts"
+          ? actual.default.resolve("tests/fixtures/posts")
+          : actual.default.resolve(...parts),
+    },
+  };
+});
+
 const POST_PATH = path.resolve("src/content/posts/javascript-symbol.md");
 
 async function render(md: string, postPath = POST_PATH) {

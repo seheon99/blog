@@ -19,34 +19,36 @@ function tagWith(html: string, attr: string): string {
 }
 
 describe("Header — sticky chrome", () => {
-  it("renders a sticky <nav> with backdrop blur and a bottom border", async () => {
+  it("renders a sticky <nav> above the graph", async () => {
     const html = await renderAt("https://blog.seheon.kr/");
     const nav = tagWith(html, "<nav");
     expect(nav).toContain("sticky top-0");
-    expect(nav).toContain("backdrop-blur");
-    expect(nav).toContain("border-b border-border");
+    expect(nav).toContain("z-100");
   });
 });
 
 describe("Header — brand mark", () => {
-  it("renders the rotated 'seheon' wordmark linked to /", async () => {
+  it("renders the plain 'seheon' wordmark linked to /", async () => {
     const html = await renderAt("https://blog.seheon.kr/");
-    expect(html).toMatch(/<a[^>]*href="\/"[^>]*-rotate-3[\s\S]*?>\s*seheon/);
-    expect(html).toContain("font-display");
+    expect(html).toMatch(/<a[^>]*href="\/"[^>]*>\s*seheon\s*<\/a>/);
+    expect(html).not.toContain("font-display");
+    expect(html).not.toContain("-rotate-3");
   });
 
-  it("includes the absolutely-positioned brand-blue accent dot", async () => {
+  it("keeps the simplified wordmark free of the old accent dot", async () => {
     const html = await renderAt("https://blog.seheon.kr/");
-    expect(html).toMatch(/<span[^>]*class="[^"]*absolute[^"]*rounded-full[^"]*bg-brand-600/);
+    expect(html).not.toMatch(
+      /<span[^>]*class="[^"]*absolute[^"]*rounded-full[^"]*bg-brand-600/,
+    );
   });
 });
 
 describe("Header — center nav links", () => {
-  it("includes writing / about / RSS", async () => {
+  it("includes writing and about links", async () => {
     const html = await renderAt("https://blog.seheon.kr/");
     expect(html).toContain(">writing<");
     expect(html).toContain(">about<");
-    expect(html).toContain(">RSS<");
+    expect(html).not.toContain(">RSS<");
   });
 
   it("marks 'writing' active when the route is the home page", async () => {
@@ -75,17 +77,27 @@ describe("Header — view toggle", () => {
       expect(html).toContain('data-view-target="graph"');
     });
 
-    it("highlights 'list' as active by default", () => {
+    it("highlights 'graph' as active by default", () => {
       const listAnchor = tagWith(html, 'data-view-target="list"');
       const graphAnchor = tagWith(html, 'data-view-target="graph"');
-      expect(listAnchor).toContain('data-current="true"');
-      expect(graphAnchor).toContain('data-current="false"');
+      expect(listAnchor).toContain('data-current="false"');
+      expect(graphAnchor).toContain('data-current="true"');
     });
 
     it("preserves data-view-target on anchor tags for the no-reload swap script", () => {
       expect(html).toMatch(/<a[^>]*data-view-target="list"/);
       expect(html).toMatch(/<a[^>]*data-view-target="graph"/);
     });
+  });
+
+  it("highlights 'list' when ?view=list", async () => {
+    const html = await renderAt("https://blog.seheon.kr/?view=list");
+    expect(tagWith(html, 'data-view-target="list"')).toContain(
+      'data-current="true"',
+    );
+    expect(tagWith(html, 'data-view-target="graph"')).toContain(
+      'data-current="false"',
+    );
   });
 
   it("highlights 'graph' when ?view=graph", async () => {
@@ -96,10 +108,12 @@ describe("Header — view toggle", () => {
     expect(listAnchor).toContain('data-current="false"');
   });
 
-  it("treats unknown view values as the default (list)", async () => {
+  it("treats unknown view values as the default (graph)", async () => {
     const html = await renderAt("https://blog.seheon.kr/?view=mystery");
     const listAnchor = tagWith(html, 'data-view-target="list"');
-    expect(listAnchor).toContain('data-current="true"');
+    const graphAnchor = tagWith(html, 'data-view-target="graph"');
+    expect(listAnchor).toContain('data-current="false"');
+    expect(graphAnchor).toContain('data-current="true"');
   });
 
   it("hides the toggle on a post page", async () => {
