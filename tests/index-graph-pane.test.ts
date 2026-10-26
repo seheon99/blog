@@ -88,7 +88,7 @@ describe("home page — list view tag filter", () => {
   it("filters the writing rows down to the active tag's posts", async () => {
     const allHtml = await renderAt("https://blog.seheon.kr/");
     const filteredHtml = await renderAt(
-      "https://blog.seheon.kr/?tag=JavaScript",
+      "https://blog.seheon.kr/?tag=Git",
     );
     const countRows = (s: string) =>
       (s.match(/<a[^>]*href="\/posts\//g) ?? []).length;
@@ -98,10 +98,9 @@ describe("home page — list view tag filter", () => {
 });
 
 describe("home page — graph view chrome", () => {
-  it("renders the featured panel above the graph", async () => {
+  it("does not render the featured panel above the graph", async () => {
     const html = await renderAt("https://blog.seheon.kr/?view=graph");
-    expect(html).toContain("data-featured-panel");
-    expect(html).toMatch(/>\s*latest\s*</);
+    expect(html).not.toContain("data-featured-panel");
   });
 
   it("renders the tag-chips filter card on the graph pane", async () => {
