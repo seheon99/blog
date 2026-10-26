@@ -3,10 +3,9 @@ import BaseLayout from "@/layouts/base-layout.astro";
 import WritingRow from "@/components/post/writing-row.astro";
 import PostGraph from "@/components/graph/post-graph";
 import TagChipsRow from "@/components/ui/tag-chips-row.astro";
-import FeaturedPanel from "@/components/post/featured-panel.astro";
 import { readMinutes } from "@/lib/read-time";
 import { buildPostGraph } from "@/lib/post-graph";
-import { isListedWriting, isNotePost } from "@/lib/post-type";
+import { isListedWriting } from "@/lib/post-type";
 import { getCollection } from "astro:content";
 
 const initialView =
@@ -23,10 +22,6 @@ const compareByCreatedAtDesc = (
 
 const writing = allPosts
   .filter((post) => isListedWriting(post.data.type))
-  .sort(compareByCreatedAtDesc);
-
-const notes = allPosts
-  .filter((post) => isNotePost(post.data.type))
   .sort(compareByCreatedAtDesc);
 
 // Stable, alphabetical list of every tag in use.
@@ -49,7 +44,6 @@ const listPosts = filteredWriting.map((post) => ({
   primaryTag: post.data.tags?.[0],
 }));
 
-const featured = writing[0] ?? notes[0];
 ---
 
 <BaseLayout title="seheon blog" description="글 목록">
@@ -83,7 +77,6 @@ const featured = writing[0] ?? notes[0];
         links={graph.links}
         activeTag={activeTag}
       />
-      {featured && <FeaturedPanel post={featured} />}
       <div
         data-graph-tag-chips
         class="pointer-events-auto absolute top-8 right-8 z-10 max-w-[320px] rounded-[14px] border border-border bg-bg-1 p-4 shadow-[0_1px_3px_rgb(0_0_0/0.04),0_8px_24px_-8px_rgb(0_0_0/0.10)] max-md:hidden"
