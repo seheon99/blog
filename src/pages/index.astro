@@ -12,7 +12,7 @@ const initialView =
   Astro.url.searchParams.get("view") === "list" ? "list" : "graph";
 const activeTag = Astro.url.searchParams.get("tag");
 
-const allPosts = await getCollection("posts");
+const allPosts = await getCollection("posts", ({ data }) => data.publish);
 const graph = buildPostGraph(allPosts);
 
 const compareByCreatedAtDesc = (

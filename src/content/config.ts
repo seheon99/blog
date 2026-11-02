@@ -17,6 +17,8 @@ const posts = defineCollection({
         .nullish()
         .transform((description) => description ?? ""),
       type: z.enum(POST_TYPES).default(DEFAULT_POST_TYPE),
+      // Obsidian Publish convention: `publish: false` hides the post.
+      publish: z.boolean().default(true),
       createdAt: z
         .preprocess((value) => value ?? undefined, z.coerce.date().optional())
         .transform((date) => date ?? new Date(0)),

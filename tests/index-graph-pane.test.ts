@@ -124,3 +124,11 @@ describe("home page — graph view chrome", () => {
     );
   });
 });
+
+describe("home page — publish flag", () => {
+  it("omits posts with `publish: false` from list and graph", async () => {
+    const html = await renderAt("https://blog.seheon.kr/?view=list");
+    expect(html).toContain("/posts/javascript-symbol");
+    expect(html).not.toContain("unpublished-draft");
+  });
+});
