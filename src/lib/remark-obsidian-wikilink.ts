@@ -20,19 +20,21 @@ interface PostsIndex {
 
 let cachedIndex: PostsIndex | null = null;
 
-function readFrontmatterTitle(filePath: string): string | undefined {
+function readFrontmatter(filePath: string): { title?: string; publish: boolean } {
   let content: string;
   try {
     content = fs.readFileSync(filePath, "utf-8");
   } catch {
-    return undefined;
+    return { publish: true };
   }
-  if (!content.startsWith("---")) return undefined;
+  if (!content.startsWith("---")) return { publish: true };
   const end = content.indexOf("\n---", 3);
-  if (end === -1) return undefined;
+  if (end === -1) return { publish: true };
   const fm = content.slice(3, end);
-  const match = fm.match(/^title:\s*["']?(.*?)["']?\s*$/m);
-  return match?.[1];
+  const title = fm.match(/^title:\s*["']?(.*?)["']?\s*$/m)?.[1];
+  // Mirror the `publish` schema default: only an explicit `false` hides.
+  const publish = !/^publish:\s*false\s*$/m.test(fm);
+  return { title, publish };
 }
 
 function walkPosts(
@@ -58,7 +60,8 @@ function walkPosts(
         .relative(baseDir, full)
         .replace(/\.md$/i, "")
         .replace(/\\/g, "/");
-      out.push({ id, title: readFrontmatterTitle(full) });
+      const { title, publish } = readFrontmatter(full);
+      if (publish) out.push({ id, title });
     }
   }
 }

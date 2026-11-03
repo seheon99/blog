@@ -48,6 +48,14 @@ beforeEach(() => {
 });
 
 describe("remark-obsidian-wikilink", () => {
+  it("leaves links to `publish: false` posts unresolved", async () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    const html = await render("see [[unpublished-draft]]");
+    expect(html).not.toContain('href="/posts/unpublished-draft"');
+    expect(html).toContain("[[unpublished-draft]]");
+    warn.mockRestore();
+  });
+
   it("resolves a bare [[id]] to /posts/id by filename", async () => {
     const html = await render("see [[typescript-narrowing]] for context");
     expect(html).toContain('href="/posts/typescript-narrowing"');

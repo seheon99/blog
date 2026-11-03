@@ -14,7 +14,7 @@ import PostFootNav from "@/components/post/post-foot-nav.astro";
 import PostGraphMini from "@/components/graph/post-graph-mini";
 
 export async function getStaticPaths() {
-  const posts = await getCollection("posts");
+  const posts = await getCollection("posts", ({ data }) => data.publish);
   const sortedPosts = [...posts].sort(
     (a, b) => b.data.createdAt.getTime() - a.data.createdAt.getTime(),
   );
@@ -51,7 +51,7 @@ const updatedDateLabel = post.data.updatedAt
 const shouldShowUpdatedDate =
   isNotePost(post.data.type) && !!post.data.updatedAt;
 
-const allPosts = await getCollection("posts");
+const allPosts = await getCollection("posts", ({ data }) => data.publish);
 const graph = buildPostGraph(allPosts);
 const backlinks = getBacklinks(allPosts, post.id);
 ---
