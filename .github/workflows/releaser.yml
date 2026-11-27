@@ -8,23 +8,39 @@ on:
     branches: ["main"]
 
 jobs:
-  release:
+  build:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
       id-token: write
+    outputs:
+      image: ${{ steps.build.outputs.image }}
     steps:
       - uses: actions/checkout@v6
         with:
           submodules: recursive
 
-      - uses: seheon99/build-and-deploy@v1
+      - uses: seheon99/build-and-deploy/build@v1.5.0
+        id: build
         with:
-          service-name: blog
           registry: ghcr.io/${{ github.repository }}
           dry-run: ${{ github.event_name == 'pull_request' }}
           skip-checkout: true
+
+  deploy:
+    needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - uses: seheon99/build-and-deploy/deploy@v1.5.0
+        with:
+          image: ${{ needs.build.outputs.image }}
+          service-name: blog
+          working-directory: /srv/apps/blog
+          compose-file: compose.yaml
+          env-file: .env
           ssh-host: ${{ secrets.SSH_HOST }}
           ssh-user: ${{ secrets.SSH_USER }}
           ssh-key: ${{ secrets.SSH_KEY }}

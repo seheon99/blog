@@ -1,0 +1,10 @@
+name: blog
+services:
+  blog:
+    image: ghcr.io/seheon99/blog@${BLOG_IMAGE_DIGEST}
+    restart: unless-stopped
+    networks:
+    - public-traefik-net
+networks:
+  public-traefik-net:
+    external: true
